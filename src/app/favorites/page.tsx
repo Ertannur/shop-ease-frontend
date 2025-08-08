@@ -2,10 +2,10 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useLikeStore } from "../stores/likeStore";
-import { useCartStore } from "../stores/cartStore";
+import { useLikeStore } from "../../stores/likeStore";
+import { useCartStore } from "../../stores/cartStore";
 
-const LikePage = () => {
+const FavoritesPage = () => {
   const likeItems = useLikeStore((state) => state.items);
   const removeFromLikes = useLikeStore((state) => state.removeFromLikes);
   const addToCart = useCartStore((state) => state.addToCart);
@@ -20,12 +20,12 @@ const LikePage = () => {
       <div className="container py-8 min-h-[60vh] flex flex-col items-center justify-center">
         <div className="text-center">
           <svg className="w-24 h-24 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
           <h2 className="text-2xl font-semibold text-gray-700 mb-2">Beğendiğiniz Ürün Yok</h2>
           <p className="text-gray-500 mb-6">Beğendiğiniz ürünler burada görünecek</p>
-          <Link 
-            href="/products" 
+          <Link
+            href="/products"
             className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors"
           >
             Ürünleri Keşfet
@@ -82,7 +82,7 @@ const LikePage = () => {
                 Renk: {item.selectedColor} | Beden: {item.selectedSize}
               </p>
               <p className="text-lg font-semibold text-gray-900 mb-4">{item.price} TL</p>
-              
+
               {/* Butonlar */}
               <div className="flex gap-2">
                 <button
@@ -117,4 +117,4 @@ const LikePage = () => {
   );
 };
 
-export default LikePage;
+export default FavoritesPage;

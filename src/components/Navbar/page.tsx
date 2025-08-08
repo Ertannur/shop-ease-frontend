@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import AuthModal from "../AuthModal";
 import { useCartStore } from "../../stores/cartStore";
 import { useLikeStore } from "../../stores/likeStore";
-import "./navbar.css";
 
 const Navbar = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);

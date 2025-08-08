@@ -29,14 +29,14 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      
+
       addToCart: (newItem) => {
         set((state) => {
           // Aynı ürün, renk ve beden kombinasyonu var mı kontrol et
           const existingItemIndex = state.items.findIndex(
-            item => 
-              item.id === newItem.id && 
-              item.selectedColor === newItem.selectedColor && 
+            item =>
+              item.id === newItem.id &&
+              item.selectedColor === newItem.selectedColor &&
               item.selectedSize === newItem.selectedSize
           );
 
@@ -47,8 +47,8 @@ export const useCartStore = create<CartState>()(
             return { items: updatedItems };
           } else {
             // Yeni ürün ekle
-            return { 
-              items: [...state.items, { ...newItem, quantity: newItem.quantity || 1 }] 
+            return {
+              items: [...state.items, { ...newItem, quantity: newItem.quantity || 1 }]
             };
           }
         });
@@ -56,7 +56,7 @@ export const useCartStore = create<CartState>()(
 
       removeFromCart: (id, color, size) => {
         set((state) => ({
-          items: state.items.filter(item => 
+          items: state.items.filter(item =>
             !(item.id === id && item.selectedColor === color && item.selectedSize === size)
           )
         }));
@@ -69,7 +69,7 @@ export const useCartStore = create<CartState>()(
         }
 
         set((state) => ({
-          items: state.items.map(item => 
+          items: state.items.map(item =>
             item.id === id && item.selectedColor === color && item.selectedSize === size
               ? { ...item, quantity }
               : item
@@ -90,14 +90,14 @@ export const useCartStore = create<CartState>()(
       },
 
       getItemCount: (id, color, size) => {
-        const item = get().items.find(item => 
+        const item = get().items.find(item =>
           item.id === id && item.selectedColor === color && item.selectedSize === size
         );
         return item ? item.quantity : 0;
       },
 
       isItemInCart: (id, color, size) => {
-        return get().items.some(item => 
+        return get().items.some(item =>
           item.id === id && item.selectedColor === color && item.selectedSize === size
         );
       },
