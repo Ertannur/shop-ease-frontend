@@ -1,0 +1,85 @@
+name: 🐛 Bug Report
+description: Bir bug rapor edin
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bug raporu için teşekkürler! Lütfen aşağıdaki bilgileri eksiksiz doldurun.
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 🐛 Bug Açıklaması
+      description: Bug'ın net ve açık bir açıklaması
+      placeholder: Bug nedir ve ne yapması gerekiyor?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 🔄 Tekrar Etme Adımları
+      description: Bug'ı tekrar etmek için adımlar
+      placeholder: |
+        1. ... sayfasına git
+        2. ... butonuna tıkla  
+        3. ... yap
+        4. Hatayı gör
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Beklenen Davranış
+      description: Ne olmasını bekliyordunuz?
+      placeholder: Neyin olması gerekiyordu?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ Gerçek Davranış  
+      description: Gerçekte ne oldu?
+      placeholder: Ne oldu?
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 Screenshots/Videos
+      description: Varsa ekran görüntüleri ekleyin
+      placeholder: Screenshot veya video URL'si
+
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: 🌐 Browser
+      multiple: true
+      options:
+        - Chrome
+        - Firefox  
+        - Safari
+        - Edge
+        - Mobile Safari
+        - Mobile Chrome
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: 💻 İşletim Sistemi
+      placeholder: "Windows 11, macOS 14, Ubuntu 22.04"
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📋 Ek Bilgiler
+      description: Bug hakkında başka bilgi var mı?

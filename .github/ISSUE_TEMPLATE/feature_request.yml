@@ -1,0 +1,70 @@
+name: ✨ Feature Request
+description: Yeni özellik önerisi
+title: "[FEATURE]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Yeni özellik önerisi için teşekkürler! 
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: ✨ Özellik Açıklaması
+      description: Önerdiğiniz özelliğin detaylı açıklaması
+      placeholder: Bu özellik ne yapacak?
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🤔 Problem
+      description: Bu özellik hangi problemi çözüyor?
+      placeholder: Hangi problemi yaşıyorsunuz?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Önerilen Çözüm
+      description: Bu problemi nasıl çözmek istiyorsunuz?
+      placeholder: Çözüm öneriniz nedir?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternatifler
+      description: Düşündüğünüz başka çözümler var mı?
+      placeholder: Başka hangi çözümleri değerlendirdiniz?
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 📈 Öncelik
+      options:
+        - Düşük
+        - Orta
+        - Yüksek
+        - Kritik
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: implementation
+    attributes:
+      label: 🛠️ Implementasyon
+      options:
+        - label: Bu özelliği kendim geliştirmek istiyorum
+        - label: Bu özellik için UI mockup'ı hazırladım
+        - label: Bu özellik için teknik araştırma yaptım
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📋 Ek Bilgiler
+      description: Başka eklemek istediğiniz bilgi var mı?
