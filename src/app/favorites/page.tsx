@@ -2,8 +2,9 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useLikeStore } from "../../stores/likeStore";
-import { useCartStore } from "../../stores/cartStore";
+import { useLikeStore } from "@/stores";
+import { useCartStore } from "@/stores";
+import { formatTL } from "@/lib";
 
 const FavoritesPage = () => {
   const likeItems = useLikeStore((state) => state.items);
@@ -81,7 +82,7 @@ const FavoritesPage = () => {
               <p className="text-sm text-gray-600 mb-2">
                 Renk: {item.selectedColor} | Beden: {item.selectedSize}
               </p>
-              <p className="text-lg font-semibold text-gray-900 mb-4">{item.price} TL</p>
+              <p className="text-lg font-semibold text-gray-900 mb-4">{formatTL(item.price)}</p>
 
               {/* Butonlar */}
               <div className="flex gap-2">

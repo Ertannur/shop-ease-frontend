@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { useLikeStore } from "../../stores/likeStore";
+import { useLikeStore } from "@/stores";
+import { formatTL } from "@/lib";
 
 const ProductsPage = () => {
   const addToLikes = useLikeStore((state) => state.addToLikes);
@@ -12,56 +13,56 @@ const ProductsPage = () => {
       id: 1,
       name: "Loose Straight Jean",
       description: "Açık mavi, Günlük",
-      price: "1000 TL",
+      price: 1000,
       image: "/placeholder-product.jpg"
     },
     {
       id: 2,
       name: "Denim Ceket",
       description: "Açık mavi, Günlük",
-      price: "1500 TL",
+      price: 1500,
       image: "/placeholder-product.jpg"
     },
     {
       id: 3,
       name: "Deri Çanta",
       description: "Siyah mavi, Bodo",
-      price: "1800 TL",
+      price: 1800,
       image: "/placeholder-product.jpg"
     },
     {
       id: 4,
       name: "Güneş Gözlüğü",
       description: "Kırmızı, Yazlık",
-      price: "2000 TL",
+      price: 2000,
       image: "/placeholder-product.jpg"
     },
     {
       id: 5,
       name: "Sweatshirt",
       description: "Turuncu, Lacıvert",
-      price: "700 TL",
+      price: 700,
       image: "/placeholder-product.jpg"
     },
     {
       id: 6,
       name: "Etek",
       description: "Mavi, Desenli",
-      price: "600 TL",
+      price: 600,
       image: "/placeholder-product.jpg"
     },
     {
       id: 7,
       name: "Güneş Gözlüğü",
       description: "Beyaz, Beyaz",
-      price: "1800 TL",
+      price: 1800,
       image: "/placeholder-product.jpg"
     },
     {
       id: 8,
       name: "Kaban",
       description: "Bej",
-      price: "1900 TL",
+      price: 1900,
       image: "/placeholder-product.jpg"
     }
   ];
@@ -91,7 +92,7 @@ const ProductsPage = () => {
                   addToLikes({
                     id: product.id.toString(),
                     name: product.name,
-                    price: parseInt(product.price.replace(' TL', '')),
+                    price: product.price,
                     image: product.image,
                     selectedColor: "Varsayılan",
                     selectedSize: "M"
@@ -121,7 +122,7 @@ const ProductsPage = () => {
                 {product.description}
               </p>
               <p className="font-semibold text-gray-900">
-                {product.price}
+                {formatTL(product.price)}
               </p>
             </div>
           </Link>

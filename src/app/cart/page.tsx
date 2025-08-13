@@ -2,7 +2,8 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useCartStore } from "../../stores/cartStore";
+import { useCartStore } from "@/stores";
+import { formatTL } from "@/lib";
 
 const CartPage = () => {
   const cartItems = useCartStore((state) => state.items);
@@ -121,9 +122,9 @@ const CartPage = () => {
                     </div>
                     
                     <div className="text-right">
-                      <p className="text-lg font-semibold">{item.price * item.quantity} TL</p>
+                      <p className="text-lg font-semibold">{formatTL(item.price * item.quantity)}</p>
                       {item.quantity > 1 && (
-                        <p className="text-sm text-gray-500">{item.price} TL x {item.quantity}</p>
+                        <p className="text-sm text-gray-500">{formatTL(item.price)} x {item.quantity}</p>
                       )}
                     </div>
                   </div>
@@ -141,19 +142,19 @@ const CartPage = () => {
             <div className="space-y-3 mb-4">
               <div className="flex justify-between">
                 <span>Ara Toplam</span>
-                <span>{subtotal.toFixed(2)} TL</span>
+                <span>{formatTL(subtotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Kargo</span>
-                <span>{shipping === 0 ? "Ücretsiz" : `${shipping.toFixed(2)} TL`}</span>
+                <span>{shipping === 0 ? "Ücretsiz" : formatTL(shipping)}</span>
               </div>
               {shipping === 0 && (
-                <p className="text-sm text-green-600">500 TL üzeri ücretsiz kargo!</p>
+                <p className="text-sm text-green-600">{formatTL(500)} üzeri ücretsiz kargo!</p>
               )}
               <hr />
               <div className="flex justify-between font-semibold text-lg">
                 <span>Toplam</span>
-                <span>{total.toFixed(2)} TL</span>
+                <span>{formatTL(total)}</span>
               </div>
             </div>
 

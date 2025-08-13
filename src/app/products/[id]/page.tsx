@@ -2,8 +2,8 @@
 import React, { useState, use } from "react";
 
 import Link from "next/link";
-import { useCartStore } from "../../stores/cartStore";
-import { useLikeStore } from "../../stores/likeStore";
+import { useCartStore, useLikeStore } from "@/stores";
+import { formatTL } from "@/lib";
 
 interface ProductDetailProps {
   params: Promise<{
@@ -175,7 +175,7 @@ const ProductDetail = ({ params }: ProductDetailProps) => {
             </button>
           </div>
 
-          <p className="text-2xl font-semibold mb-6">{product.price}</p>
+          <p className="text-2xl font-semibold mb-6">{formatTL(product.price)}</p>
 
           {/* Renk Seçimi */}
           <div className="mb-6">
