@@ -10,7 +10,7 @@ export const LazyAuthModal = dynamic(() => import('./AuthModal'), {
   ssr: false, // Auth modal doesn't need SSR
 });
 
-export const LazyPromotionSlider = dynamic(() => import('../HomePage/promotion'), {
+export const LazyPromotionSlider = dynamic(() => import('../app/HomePage/promotion'), {
   loading: () => (
     <div className="h-[596px] bg-gradient-to-r from-gray-200 to-gray-300 animate-pulse rounded-lg" />
   ),

@@ -9,7 +9,7 @@ const Navbar = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const totalItems = useCartStore((state) => state.getTotalItems());
   const totalLikes = useLikeStore((state) => state.getTotalItems());
-
+  const uniqueItemCount = useCartStore((state) => state.items.length);
   return (
     <>
       <div className="container py-4">
@@ -115,13 +115,13 @@ const Navbar = () => {
                   fill="black"
                 />
               </svg>
-              {totalItems > 0 && (
+              {uniqueItemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                  {totalItems}
+                  {uniqueItemCount}
                 </span>
               )}
             </Link>
-            <Link href="/like" className="hover:opacity-70 transition-opacity relative">
+            <Link href="/favorites" className="hover:opacity-70 transition-opacity relative">
               <svg
                 className="w-5 h-5 text-gray-600"
                 fill="none"
