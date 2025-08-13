@@ -1,0 +1,19 @@
+
+> easeshop@0.1.0 build
+> next build
+
+   ▲ Next.js 15.4.6
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 0ms
+   Linting and checking validity of types ...
+
+Failed to compile.
+
+./src/app/register/page.tsx
+8:25  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules

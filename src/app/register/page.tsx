@@ -2,19 +2,33 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { register, useAuthStore } from "@/features/auth";
+import { registerAPI } from "@/features/auth/api";
+import { useAuthStore } from "@/features/auth";
 
 function extractErrorMessage(err: unknown): string {
-  const anyErr = err as any;
+  // Type-safe error handling
+  const errorObj = err as { 
+    response?: { 
+      data?: { 
+        message?: string; 
+        error?: string; 
+        title?: string; 
+        detail?: string; 
+        errors?: Record<string, string[]>;
+      } 
+    }; 
+    message?: string; 
+  };
+  
   const msg =
-    anyErr?.response?.data?.message ??
-    anyErr?.response?.data?.error ??
-    anyErr?.message ??
-    anyErr?.response?.data?.title ??
-    anyErr?.response?.data?.detail ??
+    errorObj?.response?.data?.message ??
+    errorObj?.response?.data?.error ??
+    errorObj?.message ??
+    errorObj?.response?.data?.title ??
+    errorObj?.response?.data?.detail ??
     "";
 
-  const errorsObj = anyErr?.response?.data?.errors;
+  const errorsObj = errorObj?.response?.data?.errors;
   if (errorsObj && typeof errorsObj === "object") {
     const firstKey = Object.keys(errorsObj)[0];
     const firstArr = firstKey ? errorsObj[firstKey] : undefined;
@@ -52,8 +66,24 @@ export default function RegisterPage() {
       setLoading(false);
       return;
     }
-    if (form.password.length < 6) {
-      setErr("Şifre en az 6 karakter olmalıdır.");
+    if (form.password.length < 7) {
+      setErr("Şifre en az 7 karakter olmalıdır.");
+      setLoading(false);
+      return;
+    }
+    
+    // Şifre validation kuralları (backend'e göre)
+    const hasUpperCase = /[A-Z]/.test(form.password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(form.password);
+    
+    if (!hasUpperCase) {
+      setErr("Şifre en az bir büyük harf içermelidir.");
+      setLoading(false);
+      return;
+    }
+    
+    if (!hasSpecialChar) {
+      setErr("Şifre en az bir özel karakter içermelidir (!@#$%^&* gibi).");
       setLoading(false);
       return;
     }
@@ -69,9 +99,33 @@ export default function RegisterPage() {
     }
 
     try {
-      const res = await register(form);
-      setSession(res.user, res.accessToken ?? null, res.refreshToken ?? null);
-      router.push("/");
+      const result = await registerAPI(form);
+      
+      console.log('Register result:', result);
+      
+      if (result.success) {
+        if (result.token?.accessToken) {
+          // Token dönmüşse direkt login yap
+          localStorage.setItem('token', result.token.accessToken);
+          
+          const userInfo = {
+            id: result.userId || '',
+            email: form.email,
+            firstName: result.user?.firstName || form.firstName,
+            lastName: result.user?.lastName || form.lastName,
+            roles: result.user?.roles || []
+          };
+          
+          setSession(userInfo, result.token.accessToken);
+          router.push('/account');
+        } else {
+          // Token dönmemişse login sayfasına yönlendir
+          alert('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
+          router.push('/login');
+        }
+      } else {
+        setErr(result.message || 'Register failed');
+      }
     } catch (error: unknown) {
       setErr(extractErrorMessage(error));
     } finally {
@@ -109,13 +163,29 @@ export default function RegisterPage() {
         />
         <input
           type="password"
-          placeholder="Şifre (en az 6 karakter)"
+          placeholder="Şifre"
           className="w-full border p-3 rounded"
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
           required
-          minLength={6}
+          minLength={7}
         />
+        
+        {/* Şifre Gereksinimleri */}
+        <div className="bg-blue-50 p-3 rounded text-sm">
+          <p className="font-semibold mb-2">Şifre gereksinimleri:</p>
+          <ul className="text-xs space-y-1">
+            <li className={form.password.length >= 7 ? "text-green-600" : "text-gray-600"}>
+              ✓ En az 7 karakter
+            </li>
+            <li className={/[A-Z]/.test(form.password) ? "text-green-600" : "text-gray-600"}>
+              ✓ En az bir büyük harf (A-Z)
+            </li>
+            <li className={/[!@#$%^&*(),.?":{}|<>]/.test(form.password) ? "text-green-600" : "text-gray-600"}>
+              ✓ En az bir özel karakter (!@#$%^&* gibi)
+            </li>
+          </ul>
+        </div>
         <input
           type="tel"
           placeholder="Telefon (örn: 05551234567 veya +905551234567)"

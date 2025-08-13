@@ -6,6 +6,8 @@ type User = {
   id: string;
   email: string;
   name?: string;
+  firstName?: string;
+  lastName?: string;
   roles?: string[];
 };
 
@@ -13,7 +15,7 @@ type AuthState = {
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
-  setSession: (u: User | null, access?: string | null, refresh?: string | null) => void;
+  setSession: (user: User | null, token: string | null) => void;
   clearSession: () => void;
   isAuthed: () => boolean;
 };
@@ -22,10 +24,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   accessToken: null,
   refreshToken: null,
-  setSession: (user, access, refresh) => {
-    if (access) tokenStorage.setAccess(access);
-    if (refresh) tokenStorage.setRefresh(refresh);
-    set({ user, accessToken: access ?? get().accessToken, refreshToken: refresh ?? get().refreshToken });
+  setSession: (user: User | null, token: string | null) => {
+    if (token) {
+      tokenStorage.setAccess(token);
+      localStorage.setItem('token', token);
+    }
+    set({ user, accessToken: token, refreshToken: null });
   },
   clearSession: () => {
     tokenStorage.clearAccess();
@@ -35,11 +39,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthed: () => !!(get().user || tokenStorage.getAccess()),
 }));
 
-// İlk yüklemede localStorage'taki token'ı içeri al
+// İlk yüklemede localStorage'taki token'ı kontrol et
 if (typeof window !== "undefined") {
-  const access = tokenStorage.getAccess();
-  const refresh = tokenStorage.getRefresh();
-  if (access || refresh) {
-    useAuthStore.setState({ accessToken: access, refreshToken: refresh });
+  const token = localStorage.getItem('token');
+  if (token) {
+    useAuthStore.setState({ accessToken: token });
   }
 }

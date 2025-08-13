@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { login, useAuthStore } from "@/features/auth";
+import { loginAPI } from "@/features/auth/api";
+import { useAuthStore } from "@/features/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -10,22 +11,43 @@ export default function LoginPage() {
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+
     setLoading(true);
-    setErr(null);
+    setError('');
+
     try {
-      const res = await login(form);
-      // httpOnly cookie ise accessToken gelmeyebilir; sorun değil.
-      setSession(res.user, res.accessToken ?? null, res.refreshToken ?? null);
-      router.push("/"); // giriş sonrası ana sayfaya yönlendir
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Giriş başarısız";
-      setErr(errorMessage);
+      const result = await loginAPI(form.email, form.password);
+      
+      console.log('Login result:', result);
+      
+      if (result.success && result.token?.accessToken) {
+        // Token'ı localStorage'a kaydet
+        localStorage.setItem('token', result.token.accessToken);
+        
+        // User bilgilerini auth store'a kaydet
+        const userInfo = {
+          id: result.userId || '',
+          email: form.email,
+          firstName: result.user?.firstName,
+          lastName: result.user?.lastName,
+          roles: result.user?.roles || []
+        };
+        
+        setSession(userInfo, result.token.accessToken);
+        
+        // Account sayfasına yönlendir
+        router.push('/account');
+      } else {
+        setError(result.message || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error instanceof Error ? error.message : 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -34,7 +56,14 @@ export default function LoginPage() {
   return (
     <div className="container max-w-md py-12">
       <h1 className="text-2xl font-bold mb-6">Giriş Yap</h1>
-      <form onSubmit={onSubmit} className="space-y-4">
+
+      {/* API Info */}
+      <div className="bg-green-50 p-3 rounded mb-4 text-sm">
+        <strong>✅ Backend API Bağlantısı Aktif</strong><br />
+        Server: {process.env.NEXT_PUBLIC_API_BASE_URL}
+      </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="email"
           placeholder="E-posta"
@@ -51,7 +80,7 @@ export default function LoginPage() {
           onChange={(e) => setForm({ ...form, password: e.target.value })}
           required
         />
-        {err && <p className="text-red-600 text-sm">{err}</p>}
+        {error && <p className="text-red-600 text-sm">{error}</p>}
         <button
           type="submit"
           disabled={loading}
