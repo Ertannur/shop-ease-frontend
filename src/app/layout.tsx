@@ -27,14 +27,14 @@ const raleway = Raleway({
 
 export const metadata: Metadata = {
   title: {
-    default: "EaseShop - Modern E-Ticaret Sitesi",
-    template: "%s | EaseShop"
+    default: "ShopEase - Modern E-Ticaret Sitesi",
+    template: "%s | ShopEase"
   },
   description: "Kaliteli ürünler, uygun fiyatlar! Kadın, erkek ve çocuk giyiminde geniş ürün yelpazesi. Hızlı kargo ve güvenli alışveriş.",
   keywords: ["e-ticaret", "online alışveriş", "moda", "giyim", "kadın", "erkek", "çocuk", "kargo"],
-  authors: [{ name: "EaseShop Team" }],
-  creator: "EaseShop",
-  publisher: "EaseShop",
+  authors: [{ name: "ShopEase Team" }],
+  creator: "ShopEase",
+  publisher: "ShopEase",
   robots: {
     index: true,
     follow: true,
@@ -49,14 +49,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'tr_TR',
-    url: 'https://easeshop.com',
-    siteName: 'EaseShop',
-    title: 'EaseShop - Modern E-Ticaret Sitesi',
+    url: 'https://shopease.com',
+    siteName: 'ShopEase',
+    title: 'ShopEase - Modern E-Ticaret Sitesi',
     description: 'Kaliteli ürünler, uygun fiyatlar! Kadın, erkek ve çocuk giyiminde geniş ürün yelpazesi.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EaseShop - Modern E-Ticaret Sitesi',
+    title: 'ShopEase - Modern E-Ticaret Sitesi',
     description: 'Kaliteli ürünler, uygun fiyatlar! Kadın, erkek ve çocuk giyiminde geniş ürün yelpazesi.',
   },
 

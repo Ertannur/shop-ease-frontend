@@ -194,7 +194,7 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: getUserSpecificKey('easeshop-cart'),
+      name: getUserSpecificKey('shopease-cart'),
       storage: createJSONStorage(() => localStorage),
     }
   )

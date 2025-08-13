@@ -1,6 +1,6 @@
-# EaseShop - Modern E-Ticaret Platformu
+# ShopEase - Modern E-Ticaret Platformu
 
-EaseShop, React, Next.js ve Tailwind CSS kullanılarak geliştirilmiş **yüksek performanslı** modern bir e-ticaret platformudur. Kullanıcı dostu arayüzü, hızlı yüklenme süreleri ve zengin özellik seti ile kapsamlı bir alışveriş deneyimi sunar.
+ShopEase, React, Next.js ve Tailwind CSS kullanılarak geliştirilmiş **yüksek performanslı** modern bir e-ticaret platformudur. Kullanıcı dostu arayüzü, hızlı yüklenme süreleri ve zengin özellik seti ile kapsamlı bir alışveriş deneyimi sunar.
 
 ## 🚀 Teknolojiler
 
@@ -33,7 +33,7 @@ EaseShop, React, Next.js ve Tailwind CSS kullanılarak geliştirilmiş **yüksek
 ```bash
 # Projeyi klonlayın
 git clone [repository-url]
-cd easeshop
+cd shopease
 
 # Bağımlılıkları yükleyin
 npm install
@@ -89,7 +89,7 @@ src/
 **SEO Features:**
 ```typescript
 export const metadata: Metadata = {
-  title: { default: "EaseShop", template: "%s | EaseShop" },
+  title: { default: "ShopEase", template: "%s | ShopEase" },
   description: "Kaliteli ürünler, uygun fiyatlar!",
   openGraph: { type: 'website', locale: 'tr_TR' },
   robots: { index: true, follow: true }
@@ -365,7 +365,7 @@ NEXT_PUBLIC_ENABLE_USER_APIS=false
 **Hybrid Data Management:**
 - **Guest Users**: LocalStorage only
 - **Authenticated Users**: LocalStorage + Backend sync (when APIs are ready)
-- **User-Specific Storage**: `easeshop-cart-{userID}` for data isolation
+- **User-Specific Storage**: `shopease-cart-{userID}` for data isolation
 
 **Backend Ready Checklist:**
 ```bash
@@ -433,7 +433,7 @@ import { useCartStore } from '@/stores/cartStore';
 **Metadata Pattern:**
 ```typescript
 export const metadata: Metadata = {
-  title: "Ürün Adı | EaseShop",
+  title: "Ürün Adı | ShopEase",
   description: "Ürün açıklaması...",
   openGraph: {
     title: "Ürün Adı",

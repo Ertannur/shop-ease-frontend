@@ -172,7 +172,7 @@ export const useLikeStore = create<LikeState>()(
       },
     }),
     {
-      name: getUserSpecificKey('easeshop-likes'),
+      name: getUserSpecificKey('shopease-likes'),
       storage: createJSONStorage(() => localStorage),
     }
   )
