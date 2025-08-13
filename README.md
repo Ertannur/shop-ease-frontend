@@ -337,6 +337,45 @@ const nextConfig: NextConfig = {
 };
 ```
 
+### 🌐 **Backend API Integration**
+
+**Environment Variables (`.env.local`):**
+```bash
+# Backend API Base URL
+NEXT_PUBLIC_API_BASE_URL=https://eticaretapi-gghdgef9bzameteu.switzerlandnorth-01.azurewebsites.net/api
+
+# Authentication Endpoints
+NEXT_PUBLIC_AUTH_LOGIN=/api/Auth/Login
+NEXT_PUBLIC_AUTH_REGISTER=/api/Auth/Register
+NEXT_PUBLIC_AUTH_REFRESH=/api/Auth/Refresh
+NEXT_PUBLIC_AUTH_ROLES=/api/Auth/Roles
+NEXT_PUBLIC_AUTH_FORGOT_PASSWORD=/api/Auth/ForgotPassword
+NEXT_PUBLIC_AUTH_RESET_PASSWORD=/api/Auth/ResetPassword
+
+# User-specific API endpoints (disabled until backend is ready)
+# Set to 'true' when cart/favorites endpoints are implemented
+NEXT_PUBLIC_ENABLE_USER_APIS=false
+```
+
+**API Status:**
+- ✅ **Authentication APIs**: Fully implemented and working
+- ⏳ **User Cart APIs**: Temporarily disabled (localStorage fallback)
+- ⏳ **User Favorites APIs**: Temporarily disabled (localStorage fallback)
+
+**Hybrid Data Management:**
+- **Guest Users**: LocalStorage only
+- **Authenticated Users**: LocalStorage + Backend sync (when APIs are ready)
+- **User-Specific Storage**: `easeshop-cart-{userID}` for data isolation
+
+**Backend Ready Checklist:**
+```bash
+# When backend cart/favorites APIs are implemented:
+1. Set NEXT_PUBLIC_ENABLE_USER_APIS=true
+2. Verify endpoint URLs in constants.ts
+3. Test API integration
+4. Deploy with backend sync enabled
+```
+
 ### 📱 **Responsive Design**
 
 **Breakpoint Sistemi:**

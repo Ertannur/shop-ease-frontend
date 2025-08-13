@@ -4,9 +4,16 @@ import React, { useState, useEffect } from "react";
 import { useCartStore, useLikeStore } from "@/stores";
 import { useAuthStore } from "@/features/auth";
 import { useLogout } from "@/features/auth";
+import AuthToast from "@/components/Toast/AuthToast";
 
 const Navbar = () => {
   const [isHydrated, setIsHydrated] = useState(false);
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    position?: { x: number; y: number };
+  }>({ show: false, message: '' });
+  
   const totalItems = useCartStore((state) => state.getTotalItems());
   const totalLikes = useLikeStore((state) => state.getTotalItems());
   const isAuthenticated = useAuthStore((state) => state.isAuthed());
@@ -22,6 +29,26 @@ const Navbar = () => {
 
   // Hydration tamamlanmadıysa authentication state'ini gösterme
   const showAuthState = isHydrated && isAuthenticated;
+
+  // Favorites'a auth check ile git
+  const handleFavoritesClick = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      
+      // Mouse pozisyonunu al
+      const rect = e.currentTarget.getBoundingClientRect();
+      const position = {
+        x: rect.left + rect.width / 2,
+        y: rect.top
+      };
+      
+      setToast({
+        show: true,
+        message: 'Beğenilerinizi görmek için giriş yapmanız gerekiyor.',
+        position
+      });
+    }
+  };
 
   return (
     <>
@@ -180,6 +207,7 @@ const Navbar = () => {
             {/* wishlist iconu */}
             <Link
               href="/favorites"
+              onClick={handleFavoritesClick}
               className="hover:opacity-70 transition-opacity relative"
             >
               <svg
@@ -204,6 +232,14 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+      
+      {/* Auth Toast */}
+      <AuthToast
+        show={toast.show}
+        message={toast.message}
+        position={toast.position}
+        onClose={() => setToast({ show: false, message: '' })}
+      />
     </>
   );
 };

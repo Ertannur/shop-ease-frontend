@@ -4,10 +4,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { loginAPI } from "@/features/auth/api";
 import { useAuthStore } from "@/features/auth";
+import { useCartStore } from "@/stores/cartStore";
+import { useLikeStore } from "@/stores/likeStore";
 
 export default function LoginPage() {
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
+  const loadUserCart = useCartStore((s) => s.loadUserCart);
+  const loadUserFavorites = useLikeStore((s) => s.loadUserFavorites);
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -40,6 +44,17 @@ export default function LoginPage() {
         
         setSession(userInfo, result.token.accessToken);
         
+        // Kullanıcının backend'teki verilerini yükle
+        try {
+          await Promise.all([
+            loadUserCart(),
+            loadUserFavorites()
+          ]);
+        } catch (error) {
+          console.error('Failed to load user data:', error);
+          // Veri yükleme hatası olsa bile devam et
+        }
+        
         // Account sayfasına yönlendir
         router.push('/account');
       } else {
@@ -56,12 +71,6 @@ export default function LoginPage() {
   return (
     <div className="container max-w-md py-12">
       <h1 className="text-2xl font-bold mb-6">Giriş Yap</h1>
-
-      {/* API Info */}
-      <div className="bg-green-50 p-3 rounded mb-4 text-sm">
-        <strong>✅ Backend API Bağlantısı Aktif</strong><br />
-        Server: {process.env.NEXT_PUBLIC_API_BASE_URL}
-      </div>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <input

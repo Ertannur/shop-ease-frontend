@@ -1,10 +1,17 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useLikeStore } from "@/stores";
 import { formatTL } from "@/lib";
+import AuthToast from "@/components/Toast/AuthToast";
 
 const ProductsPage = () => {
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    position?: { x: number; y: number };
+  }>({ show: false, message: '' });
+  
   const addToLikes = useLikeStore((state) => state.addToLikes);
   const isItemLiked = useLikeStore((state) => state.isItemLiked);
 
@@ -89,6 +96,14 @@ const ProductsPage = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  
+                  // Mouse pozisyonunu al
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const position = {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top
+                  };
+                  
                   addToLikes({
                     id: product.id.toString(),
                     name: product.name,
@@ -96,6 +111,13 @@ const ProductsPage = () => {
                     image: product.image,
                     selectedColor: "Varsayılan",
                     selectedSize: "M"
+                  }, () => {
+                    // Auth required callback - toast göster
+                    setToast({
+                      show: true,
+                      message: 'Bu ürünü beğenmek için giriş yapmanız gerekiyor.',
+                      position
+                    });
                   });
                 }}
                 className={`absolute top-4 right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-gray-100 z-10 ${isItemLiked(product.id.toString(), "Varsayılan", "M") ? 'text-red-500' : 'text-gray-600'
@@ -135,6 +157,14 @@ const ProductsPage = () => {
           Daha Fazla Ürün Göster
         </button>
       </div>
+      
+      {/* Auth Toast */}
+      <AuthToast
+        show={toast.show}
+        message={toast.message}
+        position={toast.position}
+        onClose={() => setToast({ show: false, message: '' })}
+      />
     </div>
   );
 };

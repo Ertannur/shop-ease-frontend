@@ -9,5 +9,15 @@ export const AUTH_ENDPOINTS = {
   resetPassword: process.env.NEXT_PUBLIC_AUTH_RESET_PASSWORD || "/api/Auth/ResetPassword",
 } as const;
 
+export const USER_ENDPOINTS = {
+  favorites: "/api/User/Favorites",
+  cart: "/api/User/Cart",
+  addToFavorites: "/api/User/Favorites/Add",
+  removeFromFavorites: "/api/User/Favorites/Remove",
+  addToCart: "/api/User/Cart/Add",
+  removeFromCart: "/api/User/Cart/Remove",
+  updateCartQuantity: "/api/User/Cart/Update",
+} as const;
+
 export const ACCESS_TOKEN_KEY = "access_token";
 export const REFRESH_TOKEN_KEY = "refresh_token";

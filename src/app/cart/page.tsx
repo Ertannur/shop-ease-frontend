@@ -2,18 +2,31 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCartStore } from "@/stores";
+import { useAuthStore } from "@/features/auth";
 import { formatTL } from "@/lib";
 
 const CartPage = () => {
+  const router = useRouter();
   const cartItems = useCartStore((state) => state.items);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
   const getTotalPrice = useCartStore((state) => state.getTotalPrice);
+  const isAuthenticated = useAuthStore((state) => state.isAuthed());
 
   const subtotal = getTotalPrice();
   const shipping = subtotal > 500 ? 0 : 29.99;
   const total = subtotal + shipping;
+
+  // Checkout'a auth check ile git
+  const handleCheckoutClick = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      alert('Satın alma işlemini tamamlamak için giriş yapmanız gerekiyor.');
+      router.push('/login');
+    }
+  };
 
   const breadcrumbs = [
     { name: "Anasayfa", href: "/" },
@@ -160,6 +173,7 @@ const CartPage = () => {
 
             <Link
               href="/checkout"
+              onClick={handleCheckoutClick}
               className="w-full bg-black text-white py-3 rounded-md hover:bg-gray-800 transition-colors text-center block font-medium"
             >
               Satın Al

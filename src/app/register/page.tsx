@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { registerAPI } from "@/features/auth/api";
 import { useAuthStore } from "@/features/auth";
+import { useCartStore } from "@/stores/cartStore";
+import { useLikeStore } from "@/stores/likeStore";
 
 function extractErrorMessage(err: unknown): string {
   // Type-safe error handling
@@ -42,6 +44,8 @@ function extractErrorMessage(err: unknown): string {
 export default function RegisterPage() {
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
+  const loadUserCart = useCartStore((s) => s.loadUserCart);
+  const loadUserFavorites = useLikeStore((s) => s.loadUserFavorites);
 
   const [form, setForm] = useState({
     firstName: "",
@@ -117,6 +121,18 @@ export default function RegisterPage() {
           };
           
           setSession(userInfo, result.token.accessToken);
+          
+          // Kullanıcının backend'teki verilerini yükle (yeni kullanıcı için boş olacak)
+          try {
+            await Promise.all([
+              loadUserCart(),
+              loadUserFavorites()
+            ]);
+          } catch (error) {
+            console.error('Failed to load user data:', error);
+            // Veri yükleme hatası olsa bile devam et
+          }
+          
           router.push('/account');
         } else {
           // Token dönmemişse login sayfasına yönlendir

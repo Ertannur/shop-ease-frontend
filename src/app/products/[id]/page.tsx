@@ -4,6 +4,8 @@ import React, { useState, use } from "react";
 import Link from "next/link";
 import { useCartStore, useLikeStore } from "@/stores";
 import { formatTL } from "@/lib";
+import AuthToast from "@/components/Toast/AuthToast";
+import SuccessToast from "@/components/Toast/SuccessToast";
 
 interface ProductDetailProps {
   params: Promise<{
@@ -17,6 +19,18 @@ const ProductDetail = ({ params }: ProductDetailProps) => {
   const [selectedColor, setSelectedColor] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+  
+  // Toast states
+  const [successToast, setSuccessToast] = useState<{
+    show: boolean;
+    message: string;
+  }>({ show: false, message: '' });
+  
+  const [authToast, setAuthToast] = useState<{
+    show: boolean;
+    message: string;
+    position?: { x: number; y: number };
+  }>({ show: false, message: '' });
 
   const addToCart = useCartStore((state) => state.addToCart);
   const addToLikes = useLikeStore((state) => state.addToLikes);
@@ -47,28 +61,45 @@ const ProductDetail = ({ params }: ProductDetailProps) => {
     productCode: "1567865656536-856",
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!selectedSize) {
-      alert("Lütfen beden seçiniz!");
+      setSuccessToast({
+        show: true,
+        message: "Lütfen beden seçiniz!"
+      });
       return;
     }
 
-    addToCart({
-      id: id,
-      name: product.name,
-      price: product.price,
-      image: product.images[0],
-      selectedColor: product.colors[selectedColor].name,
-      selectedSize,
-      quantity,
-    });
+    try {
+      await addToCart({
+        id: id,
+        name: product.name,
+        price: product.price,
+        image: product.images[0],
+        selectedColor: product.colors[selectedColor].name,
+        selectedSize,
+        quantity,
+      });
 
-    alert(`${product.name} sepete eklendi!`);
+      setSuccessToast({
+        show: true,
+        message: `${product.name} sepete eklendi!`
+      });
+    } catch (error) {
+      console.error('Add to cart failed:', error);
+      setSuccessToast({
+        show: true,
+        message: 'Ürün sepete eklenirken bir hata oluştu!'
+      });
+    }
   };
 
-  const handleLike = () => {
+  const handleLike = async (event?: React.MouseEvent<HTMLButtonElement>) => {
     if (!selectedSize) {
-      alert("Lütfen beden seçiniz!");
+      setSuccessToast({
+        show: true,
+        message: "Lütfen beden seçiniz!"
+      });
       return;
     }
 
@@ -81,8 +112,40 @@ const ProductDetail = ({ params }: ProductDetailProps) => {
       selectedSize,
     };
 
-    addToLikes(itemToLike);
-    alert(`${product.name} beğenilere eklendi!`);
+    try {
+      await addToLikes(itemToLike, () => {
+        // Auth required callback
+        let position = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        
+        if (event) {
+          const rect = event.currentTarget.getBoundingClientRect();
+          position = {
+            x: rect.left + rect.width / 2,
+            y: rect.top
+          };
+        }
+        
+        setAuthToast({
+          show: true,
+          message: 'Bu ürünü beğenmek için giriş yapmanız gerekiyor.',
+          position
+        });
+      });
+
+      // Eğer buraya geldiysek, authentication başarılı
+      if (localStorage.getItem('token')) {
+        setSuccessToast({
+          show: true,
+          message: `${product.name} beğenilere eklendi!`
+        });
+      }
+    } catch (error) {
+      console.error('Add to likes failed:', error);
+      setSuccessToast({
+        show: true,
+        message: 'Ürün beğenilere eklenirken bir hata oluştu!'
+      });
+    }
   };
 
   const isLiked = isItemLiked(id, product.colors[selectedColor].name, selectedSize);
@@ -242,7 +305,7 @@ const ProductDetail = ({ params }: ProductDetailProps) => {
           </button>
           {/* Beğen Butonu */}
           <button 
-            onClick={handleLike} 
+            onClick={handleLike}
             disabled={!selectedSize}
             className={`w-full py-4 rounded-md transition-colors duration-300 text-lg font-medium mb-8 disabled:bg-gray-400 disabled:cursor-not-allowed ${
               isLiked 
@@ -283,6 +346,21 @@ const ProductDetail = ({ params }: ProductDetailProps) => {
           </div>
         </div>
       </div>
+      
+      {/* Success Toast */}
+      <SuccessToast
+        show={successToast.show}
+        message={successToast.message}
+        onClose={() => setSuccessToast({ show: false, message: '' })}
+      />
+      
+      {/* Auth Toast */}
+      <AuthToast
+        show={authToast.show}
+        message={authToast.message}
+        position={authToast.position}
+        onClose={() => setAuthToast({ show: false, message: '' })}
+      />
     </div>
   );
 };
