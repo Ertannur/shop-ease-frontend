@@ -2,7 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useCartStore } from "../stores/cartStore";
+import { useCartStore } from "../../stores/cartStore";
 
 const CartPage = () => {
   const cartItems = useCartStore((state) => state.items);
