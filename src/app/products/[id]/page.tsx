@@ -2,8 +2,9 @@
 import React, { useState, use } from "react";
 
 import Link from "next/link";
-import { useCartStore } from "../../stores/cartStore";
-import { useLikeStore } from "../../stores/likeStore";
+import { useCartStore } from "@/stores/cartStore";
+import { useLikeStore } from "@/stores/likeStore";
+
 
 interface ProductDetailProps {
   params: Promise<{

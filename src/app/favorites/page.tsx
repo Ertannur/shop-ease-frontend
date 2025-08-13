@@ -37,7 +37,7 @@ const FavoritesPage = () => {
 
   return (
     <div className="container py-8">
-      {/* Breadcrumb */}
+      {/*  */}
       <nav className="mb-8">
         <ol className="flex space-x-2 text-sm">
           {breadcrumbs.map((breadcrumb, index) => (

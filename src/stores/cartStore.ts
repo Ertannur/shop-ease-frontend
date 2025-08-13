@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 export interface CartItem {
   id: string;
@@ -14,9 +14,14 @@ export interface CartItem {
 interface CartState {
   items: CartItem[];
   // Actions
-  addToCart: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
+  addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
   removeFromCart: (id: string, color: string, size: string) => void;
-  updateQuantity: (id: string, color: string, size: string, quantity: number) => void;
+  updateQuantity: (
+    id: string,
+    color: string,
+    size: string,
+    quantity: number
+  ) => void;
   clearCart: () => void;
   // Computed values
   getTotalItems: () => number;
@@ -31,24 +36,43 @@ export const useCartStore = create<CartState>()(
       items: [],
 
       addToCart: (newItem) => {
+        console.log("=== ADD TO CART DEBUG ===");
+        console.log("Yeni ürün:", newItem);
+        console.log("Mevcut items:", get().items);
+
         set((state) => {
           // Aynı ürün, renk ve beden kombinasyonu var mı kontrol et
           const existingItemIndex = state.items.findIndex(
-            item =>
+            (item) =>
               item.id === newItem.id &&
               item.selectedColor === newItem.selectedColor &&
               item.selectedSize === newItem.selectedSize
           );
+          console.log("Existing item index:", existingItemIndex);
 
           if (existingItemIndex !== -1) {
+            console.log("Var olan ürün bulundu, quantity artırılıyor");
+            console.log(
+              "Mevcut quantity:",
+              state.items[existingItemIndex].quantity
+            );
+            console.log("Eklenecek quantity:", newItem.quantity || 1);
             // Var olan ürünün miktarını artır
             const updatedItems = [...state.items];
             updatedItems[existingItemIndex].quantity += newItem.quantity || 1;
+            console.log(
+              "Güncellenmiş quantity:",
+              updatedItems[existingItemIndex].quantity
+            );
+            console.log("Güncellenmiş items:", updatedItems);
             return { items: updatedItems };
           } else {
             // Yeni ürün ekle
             return {
-              items: [...state.items, { ...newItem, quantity: newItem.quantity || 1 }]
+              items: [
+                ...state.items,
+                { ...newItem, quantity: newItem.quantity || 1 },
+              ],
             };
           }
         });
@@ -56,9 +80,14 @@ export const useCartStore = create<CartState>()(
 
       removeFromCart: (id, color, size) => {
         set((state) => ({
-          items: state.items.filter(item =>
-            !(item.id === id && item.selectedColor === color && item.selectedSize === size)
-          )
+          items: state.items.filter(
+            (item) =>
+              !(
+                item.id === id &&
+                item.selectedColor === color &&
+                item.selectedSize === size
+              )
+          ),
         }));
       },
 
@@ -69,11 +98,13 @@ export const useCartStore = create<CartState>()(
         }
 
         set((state) => ({
-          items: state.items.map(item =>
-            item.id === id && item.selectedColor === color && item.selectedSize === size
+          items: state.items.map((item) =>
+            item.id === id &&
+            item.selectedColor === color &&
+            item.selectedSize === size
               ? { ...item, quantity }
               : item
-          )
+          ),
         }));
       },
 
@@ -86,24 +117,33 @@ export const useCartStore = create<CartState>()(
       },
 
       getTotalPrice: () => {
-        return get().items.reduce((total, item) => total + (item.price * item.quantity), 0);
+        return get().items.reduce(
+          (total, item) => total + item.price * item.quantity,
+          0
+        );
       },
 
       getItemCount: (id, color, size) => {
-        const item = get().items.find(item =>
-          item.id === id && item.selectedColor === color && item.selectedSize === size
+        const item = get().items.find(
+          (item) =>
+            item.id === id &&
+            item.selectedColor === color &&
+            item.selectedSize === size
         );
         return item ? item.quantity : 0;
       },
 
       isItemInCart: (id, color, size) => {
-        return get().items.some(item =>
-          item.id === id && item.selectedColor === color && item.selectedSize === size
+        return get().items.some(
+          (item) =>
+            item.id === id &&
+            item.selectedColor === color &&
+            item.selectedSize === size
         );
       },
     }),
     {
-      name: 'easeshop-cart', // localStorage key
+      name: "easeshop-cart", // localStorage key
       storage: createJSONStorage(() => localStorage),
     }
   )

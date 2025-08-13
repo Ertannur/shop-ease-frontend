@@ -195,15 +195,6 @@ const addToCart = useCartStore((state) => state.addToCart);
 const totalItems = useCartStore((state) => state.getTotalItems());
 ```
 
-### 🔄 **Context API'den Zustand'a Geçiş**
-
-| Özellik | Context API | Zustand | İyileşme |
-|---------|-------------|---------|----------|
-| **Bundle Size** | 100% | 85% | %15 küçük |
-| **Re-render** | Her değişimde | Selective | %70 azalma |
-| **Boilerplate** | 50+ satır | 10 satır | %80 azalma |
-| **Performance** | Orta | Yüksek | %35 hızlı |
-| **TypeScript** | Manuel | Otomatik | Native |
 
 ## 🛍️ E-Ticaret Sayfaları
 
