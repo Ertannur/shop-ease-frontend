@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useCartStore, useLikeStore } from "@/stores";
 import { useAuthStore } from "@/features/auth";
 import { useLogout } from "@/features/auth";
 
 const Navbar = () => {
+  const [isHydrated, setIsHydrated] = useState(false);
   const totalItems = useCartStore((state) => state.getTotalItems());
   const totalLikes = useLikeStore((state) => state.getTotalItems());
   const isAuthenticated = useAuthStore((state) => state.isAuthed());
@@ -13,6 +14,14 @@ const Navbar = () => {
   const logout = useLogout();
   const displayName =
     user?.firstName || user?.name || user?.email || "Kullanıcı";
+
+  // Hydration tamamlandığında state'i güncelle
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  // Hydration tamamlanmadıysa authentication state'ini gösterme
+  const showAuthState = isHydrated && isAuthenticated;
 
   return (
     <>
@@ -81,7 +90,7 @@ const Navbar = () => {
             </div>
 
             {/* profil iconu */}
-            {isAuthenticated ? (
+            {showAuthState ? (
               <>
                 {/* Hoş geldin etiketi */}
                 <span className="hidden md:inline-block text-sm text-gray-700 mr-2">
@@ -130,7 +139,7 @@ const Navbar = () => {
                   </div>
                 </div>
               </>
-            ) : (
+            ) : isHydrated ? (
               <div className="flex items-center gap-3">
                 <Link href="/login" className="text-sm hover:underline">
                   Giriş Yap
@@ -140,7 +149,7 @@ const Navbar = () => {
                   Kayıt Ol
                 </Link>
               </div>
-            )}
+            ) : null}
 
             {/* sepet iconu */}
             <Link
