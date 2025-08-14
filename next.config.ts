@@ -1,15 +1,17 @@
 // next.config.ts
 import type { NextConfig } from "next";
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
   // GitHub Pages için static export
   output: 'export',
   trailingSlash: true,
   distDir: 'dist',
   
-  // Repo subdirectory için basePath
-  basePath: '/shop-ease-frontend',
-  assetPrefix: '/shop-ease-frontend/',
+  // Repo subdirectory için basePath - sadece production'da
+  basePath: isProd ? '/shop-ease-frontend' : '',
+  assetPrefix: isProd ? '/shop-ease-frontend/' : '',
   
   experimental: { 
     optimizePackageImports: ["@heroicons/react", "lucide-react"],
