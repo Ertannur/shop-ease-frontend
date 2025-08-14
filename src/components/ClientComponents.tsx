@@ -5,12 +5,7 @@ import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
 // Lazy load interactive components
-export const LazyAuthModal = dynamic(() => import('./AuthModal'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96 w-full" />,
-  ssr: false, // Auth modal doesn't need SSR
-});
-
-export const LazyPromotionSlider = dynamic(() => import('../HomePage/promotion'), {
+export const LazyPromotionSlider = dynamic(() => import('../app/HomePage/promotion'), {
   loading: () => (
     <div className="h-[596px] bg-gradient-to-r from-gray-200 to-gray-300 animate-pulse rounded-lg" />
   ),

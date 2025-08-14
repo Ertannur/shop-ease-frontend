@@ -1,14 +1,54 @@
 "use client";
 import Link from "next/link";
-import React, { useState } from "react";
-import AuthModal from "../AuthModal";
-import { useCartStore } from "../../stores/cartStore";
-import { useLikeStore } from "../../stores/likeStore";
+import React, { useState, useEffect } from "react";
+import { useCartStore, useLikeStore } from "@/stores";
+import { useAuthStore } from "@/features/auth";
+import { useLogout } from "@/features/auth";
+import AuthToast from "@/components/Toast/AuthToast";
 
 const Navbar = () => {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    position?: { x: number; y: number };
+  }>({ show: false, message: '' });
+  
   const totalItems = useCartStore((state) => state.getTotalItems());
   const totalLikes = useLikeStore((state) => state.getTotalItems());
+  const isAuthenticated = useAuthStore((state) => state.isAuthed());
+  const user = useAuthStore((state) => state.user);
+  const logout = useLogout();
+  const displayName =
+    user?.firstName || user?.name || user?.email || "Kullanıcı";
+
+  // Hydration tamamlandığında state'i güncelle
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  // Hydration tamamlanmadıysa authentication state'ini gösterme
+  const showAuthState = isHydrated && isAuthenticated;
+
+  // Favorites'a auth check ile git
+  const handleFavoritesClick = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      
+      // Mouse pozisyonunu al
+      const rect = e.currentTarget.getBoundingClientRect();
+      const position = {
+        x: rect.left + rect.width / 2,
+        y: rect.top
+      };
+      
+      setToast({
+        show: true,
+        message: 'Beğenilerinizi görmek için giriş yapmanız gerekiyor.',
+        position
+      });
+    }
+  };
 
   return (
     <>
@@ -77,25 +117,67 @@ const Navbar = () => {
             </div>
 
             {/* profil iconu */}
-            <button
-              onClick={() => setIsAuthModalOpen(true)}
-              className="hover:opacity-70 transition-opacity"
-            >
-              <svg
-                width="18"
-                height="20"
-                viewBox="0 0 18 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M9 2C7.34315 2 6 3.34315 6 5C6 6.65685 7.34315 8 9 8C10.6569 8 12 6.65685 12 5C12 3.34315 10.6569 2 9 2ZM4 5C4 2.23858 6.23858 0 9 0C11.7614 0 14 2.23858 14 5C14 7.76142 11.7614 10 9 10C6.23858 10 4 7.76142 4 5ZM1.46447 13.4645C2.40215 12.5268 3.67392 12 5 12H13C14.3261 12 15.5979 12.5268 16.5355 13.4645C17.4732 14.4021 18 15.6739 18 17V19C18 19.5523 17.5523 20 17 20C16.4477 20 16 19.5523 16 19V17C16 16.2044 15.6839 15.4413 15.1213 14.8787C14.5587 14.3161 13.7956 14 13 14H5C4.20435 14 3.44129 14.3161 2.87868 14.8787C2.31607 15.4413 2 16.2043 2 17V19C2 19.5523 1.55228 20 1 20C0.447715 20 0 19.5523 0 19V17C0 15.6739 0.526784 14.4021 1.46447 13.4645Z"
-                  fill="black"
-                />
-              </svg>
-            </button>
+            {showAuthState ? (
+              <>
+                {/* Hoş geldin etiketi */}
+                <span className="hidden md:inline-block text-sm text-gray-700 mr-2">
+                  Hoş geldin, <strong>{displayName}</strong>
+                </span>
+
+                <div className="relative group">
+                  <button className="hover:opacity-70 transition-opacity flex items-center gap-2">
+                    <svg
+                      width="18"
+                      height="20"
+                      viewBox="0 0 18 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M9 0C11.2091 0 13 1.79086 13 4C13 6.20914 11.2091 8 9 8C6.79086 8 5 6.20914 5 4C5 1.79086 6.79086 0 9 0ZM9 2C7.89543 2 7 2.89543 7 4C7 5.10457 7.89543 6 9 6C10.1046 6 11 5.10457 11 4C11 2.89543 10.1046 2 9 2ZM9 10C13.9706 10 18 14.0294 18 19V20H16V19C16 15.134 12.866 12 9 12C5.13401 12 2 15.134 2 19V20H0V19C0 14.0294 4.02944 10 9 10Z"
+                        fill="black"
+                      />
+                    </svg>
+                  </button>
+                  {/* Dropdown Menu */}
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="py-2">
+                      <div className="px-4 py-2 border-b border-gray-100">
+                        <p className="text-xs text-gray-500">Merhaba,</p>
+                        <p className="text-sm font-medium truncate">
+                          {displayName}
+                        </p>
+                      </div>
+                      <Link
+                        href="/account"
+                        className="block px-4 py-2 text-sm hover:bg-gray-50"
+                      >
+                        Hesabım
+                      </Link>
+                      <button
+                        onClick={logout}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        Çıkış Yap
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : isHydrated ? (
+              <div className="flex items-center gap-3">
+                <Link href="/login" className="text-sm hover:underline">
+                  Giriş Yap
+                </Link>
+                <span className="text-gray-300">/</span>
+                <Link href="/register" className="text-sm hover:underline">
+                  Kayıt Ol
+                </Link>
+              </div>
+            ) : null}
+
             {/* sepet iconu */}
             <Link
               href="/cart"
@@ -121,7 +203,13 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
-            <Link href="/like" className="hover:opacity-70 transition-opacity relative">
+
+            {/* wishlist iconu */}
+            <Link
+              href="/favorites"
+              onClick={handleFavoritesClick}
+              className="hover:opacity-70 transition-opacity relative"
+            >
               <svg
                 className="w-5 h-5 text-gray-600"
                 fill="none"
@@ -144,11 +232,13 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
+      
+      {/* Auth Toast */}
+      <AuthToast
+        show={toast.show}
+        message={toast.message}
+        position={toast.position}
+        onClose={() => setToast({ show: false, message: '' })}
       />
     </>
   );

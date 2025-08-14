@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import AuthGuard from "@/components/AuthGuard";
 
 const CheckoutPage = () => {
   const [formData, setFormData] = useState({
@@ -43,7 +44,8 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="container py-8">
+    <AuthGuard>
+      <div className="container py-8">
       {/* Header */}
       <div className="flex items-center mb-8">
         <Link href="/cart" className="flex items-center text-gray-600 hover:text-black transition-colors">
@@ -245,6 +247,7 @@ const CheckoutPage = () => {
         </div>
       </div>
     </div>
+    </AuthGuard>
   );
 };
 

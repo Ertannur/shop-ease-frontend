@@ -1,4 +1,4 @@
-# 👥 Takım Geliştirme Rehberi - EaseShop
+# 👥 Takım Geliştirme Rehberi - ShopEase
 
 ## 🚀 Yeni Geliştirici Onboarding
 
@@ -6,10 +6,10 @@
 
 ```bash
 # 1. Repository'yi clone edin
-git clone https://github.com/mertdrmz/easeshop.git
+git clone https://github.com/mertdrmz/shopease.git
 
 # 2. Proje klasörüne girin  
-cd easeshop
+cd shopease
 
 # 3. Bağımlılıkları yükleyin
 npm install
@@ -417,7 +417,7 @@ npm run audit
 
 ### 🔗 **Important Links**
 
-- **Repository:** https://github.com/mertdrmz/easeshop
+- **Repository:** https://github.com/mertdrmz/shopease
 - **Live Demo:** [Deploy URL]
 - **Documentation:** This file + README.md
 - **Performance Dashboard:** [Monitoring URL]
