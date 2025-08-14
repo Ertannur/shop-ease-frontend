@@ -146,8 +146,12 @@ export const orderRequestSchema = z.object({
 
 // Ürün bilgisi
 export interface Product {
+  id: string;
   name: string;
   price: number;
+  image: string;
+  selectedColor: string;
+  selectedSize: string;
   quantity: number;
 }
 
