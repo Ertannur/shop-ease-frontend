@@ -6,6 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
+    "export": "npm run build && next export",
+    "deploy": "npm run build && touch out/.nojekyll && echo 'shopease.github.io' > out/CNAME",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf .next out node_modules/.cache",

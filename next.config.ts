@@ -2,8 +2,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: { optimizePackageImports: ["@heroicons/react", "lucide-react"] },
+  // GitHub Pages için static export
+  output: 'export',
+  trailingSlash: true,
+  distDir: 'out',
+  
+  // GitHub Pages subdirectory için basePath (repo adınıza göre)
+  basePath: process.env.NODE_ENV === 'production' ? '/shop-ease-frontend' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/shop-ease-frontend/' : '',
+  
+  experimental: { 
+    optimizePackageImports: ["@heroicons/react", "lucide-react"],
+  },
   images: {
+    unoptimized: true, // GitHub Pages için gerekli
     formats: ["image/webp", "image/avif"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -11,13 +23,6 @@ const nextConfig: NextConfig = {
   },
   compress: true,
   poweredByHeader: false,
-
-  async rewrites() {
-    const remoteBase = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") || "";
-    return remoteBase
-      ? [{ source: "/api/:path*", destination: `${remoteBase}/api/:path*` }]
-      : [];
-  },
 };
 
 export default nextConfig;
