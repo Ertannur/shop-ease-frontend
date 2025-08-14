@@ -5,11 +5,6 @@ const nextConfig: NextConfig = {
   // GitHub Pages için static export
   output: 'export',
   trailingSlash: true,
-  distDir: 'out',
-  
-  // GitHub Pages subdirectory için basePath (repo adınıza göre)
-  basePath: process.env.NODE_ENV === 'production' ? '/shop-ease-frontend' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/shop-ease-frontend/' : '',
   
   experimental: { 
     optimizePackageImports: ["@heroicons/react", "lucide-react"],
