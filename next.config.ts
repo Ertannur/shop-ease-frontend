@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   // GitHub Pages için static export
   output: 'export',
   trailingSlash: true,
+  distDir: 'dist',
+  
+  // Repo subdirectory için basePath
+  basePath: '/shop-ease-frontend',
+  assetPrefix: '/shop-ease-frontend/',
   
   experimental: { 
     optimizePackageImports: ["@heroicons/react", "lucide-react"],

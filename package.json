@@ -6,8 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "export": "npm run build && next export",
-    "deploy": "npm run build && touch out/.nojekyll && echo 'shopease.github.io' > out/CNAME",
+    "export": "npm run build",
+    "deploy": "npm run build && npx gh-pages -d dist --dotfiles",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf .next out node_modules/.cache",
@@ -32,6 +32,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.4.5",
+    "gh-pages": "^6.3.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
