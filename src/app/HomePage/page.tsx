@@ -20,11 +20,11 @@ export default function HomePage() {
 
 // Metadata for SEO
 export const metadata = {
-  title: "EaseShop - Modern E-Ticaret",
+  title: "ShopEase - Modern E-Ticaret",
   description: "En uygun fiyatlarla kaliteli ürünler. Kadın, erkek ve çocuk giyiminde geniş ürün yelpazesi.",
   keywords: "e-ticaret, online alışveriş, moda, giyim, kadın, erkek, çocuk",
   openGraph: {
-    title: "EaseShop - Modern E-Ticaret",
+    title: "ShopEase - Modern E-Ticaret",
     description: "En uygun fiyatlarla kaliteli ürünler",
     type: "website",
   },
