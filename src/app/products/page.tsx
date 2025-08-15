@@ -19,7 +19,9 @@ const ProductsPage = () => {
 
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
     totalPage: 0,
     totalCount: 0,
@@ -32,7 +34,7 @@ const ProductsPage = () => {
       try {
         setLoading(true);
         const response = await axios.get<ProductsResponse>(
-          'https://eticaretapi-gghdgef9bzameteu.switzerlandnorth-01.azurewebsites.net/api/Product/GetProducts'
+          `https://eticaretapi-gghdgef9bzameteu.switzerlandnorth-01.azurewebsites.net/api/Product/GetProducts?page=${currentPage}&pageSize=8`
         );
         setProducts(response.data.products);
         setPagination({
@@ -50,7 +52,37 @@ const ProductsPage = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [currentPage]);
+
+  const loadMoreProducts = async () => {
+    if (loadingMore || !pagination.hasNextPage) return;
+    
+    try {
+      setLoadingMore(true);
+      const nextPage = currentPage + 1;
+      const response = await axios.get<ProductsResponse>(
+        `https://eticaretapi-gghdgef9bzameteu.switzerlandnorth-01.azurewebsites.net/api/Product/GetProducts?page=${nextPage}&pageSize=8`
+      );
+      
+      // Mevcut ürünlere yeni ürünleri ekle (duplicate kontrol ile)
+      setProducts(prevProducts => {
+        const existingIds = new Set(prevProducts.map(p => p.productId));
+        const newProducts = response.data.products.filter(p => !existingIds.has(p.productId));
+        return [...prevProducts, ...newProducts];
+      });
+      setCurrentPage(nextPage);
+      setPagination({
+        totalPage: response.data.totalPage,
+        totalCount: response.data.totalCount,
+        hasPreviousPage: response.data.hasPreviousPage,
+        hasNextPage: response.data.hasNextPage
+      });
+    } catch (err) {
+      console.error('Error loading more products:', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -156,8 +188,19 @@ const ProductsPage = () => {
       {/* Daha Fazla Yükle Butonu */}
       {pagination.hasNextPage && (
         <div className="text-center mt-12">
-          <button className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors duration-300">
-            Daha Fazla Ürün Göster
+          <button 
+            onClick={loadMoreProducts}
+            disabled={loadingMore}
+            className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
+          >
+            {loadingMore ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Yükleniyor...
+              </>
+            ) : (
+              'Daha Fazla Ürün Göster'
+            )}
           </button>
         </div>
       )}
