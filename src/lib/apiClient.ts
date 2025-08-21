@@ -2,7 +2,7 @@ import axios from "axios";
 import { API_BASE } from "./constants";
 
 export const api = axios.create({
-  baseURL: API_BASE || 'https://eticaretapi-gghdgef9bzameteu.switzerlandnorth-01.azurewebsites.net/api',
+  baseURL: API_BASE || 'https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net/api',
   withCredentials: false,
   headers: {
     'Content-Type': 'application/json',

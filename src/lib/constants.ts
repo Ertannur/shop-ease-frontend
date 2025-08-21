@@ -19,5 +19,10 @@ export const USER_ENDPOINTS = {
   updateCartQuantity: "/api/User/Cart/Update",
 } as const;
 
+export const PRODUCT_ENDPOINTS = {
+  getProducts: "/api/Product/GetProducts",
+  getProduct: "/api/Product/GetProduct",
+} as const;
+
 export const ACCESS_TOKEN_KEY = "access_token";
 export const REFRESH_TOKEN_KEY = "refresh_token";

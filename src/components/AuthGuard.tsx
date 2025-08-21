@@ -14,19 +14,16 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
     const checkAuth = () => {
       if (typeof window === "undefined") return;
 
-      // Token kontrolü - localStorage'dan direkt
-      const token = localStorage.getItem('token');
-      
-      if (token || user || accessToken) {
+      if (user || accessToken) {
         setIsLoading(false);
         return;
       }
 
       // Authentication yok, login'e yönlendir
       router.replace("/login");
-      setIsLoading(false);
     };
 
+    // accessToken veya user değiştiğinde kontrolü yeniden yap
     checkAuth();
   }, [router, user, accessToken]);
 

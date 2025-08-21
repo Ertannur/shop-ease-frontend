@@ -342,7 +342,7 @@ const nextConfig: NextConfig = {
 **Environment Variables (`.env.local`):**
 ```bash
 # Backend API Base URL
-NEXT_PUBLIC_API_BASE_URL=https://eticaretapi-gghdgef9bzameteu.switzerlandnorth-01.azurewebsites.net/api
+NEXT_PUBLIC_API_BASE_URL=https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net/api
 
 # Authentication Endpoints
 NEXT_PUBLIC_AUTH_LOGIN=/api/Auth/Login

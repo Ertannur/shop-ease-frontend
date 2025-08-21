@@ -1,11 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import axios from "axios";
 import { useLikeStore } from "@/stores";
 import { formatTL } from "@/lib";
 import AuthToast from "@/components/Toast/AuthToast";
 import { ApiProduct, ProductsResponse } from "@/Types";
+import { api } from "@/lib/apiClient";
+import { PRODUCT_ENDPOINTS } from "@/lib/constants";
 
 const ProductsPage = () => {
   const [toast, setToast] = useState<{
@@ -33,8 +34,8 @@ const ProductsPage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await axios.get<ProductsResponse>(
-          `https://eticaretapi-gghdgef9bzameteu.switzerlandnorth-01.azurewebsites.net/api/Product/GetProducts?page=${currentPage}&pageSize=8`
+        const response = await api.get<ProductsResponse>(
+          `${PRODUCT_ENDPOINTS.getProducts}?page=${currentPage}&pageSize=8`
         );
         setProducts(response.data.products);
         setPagination({
@@ -60,14 +61,14 @@ const ProductsPage = () => {
     try {
       setLoadingMore(true);
       const nextPage = currentPage + 1;
-      const response = await axios.get<ProductsResponse>(
-        `https://eticaretapi-gghdgef9bzameteu.switzerlandnorth-01.azurewebsites.net/api/Product/GetProducts?page=${nextPage}&pageSize=8`
+      const response = await api.get<ProductsResponse>(
+        `${PRODUCT_ENDPOINTS.getProducts}?page=${nextPage}&pageSize=8`
       );
       
       // Mevcut ürünlere yeni ürünleri ekle (duplicate kontrol ile)
       setProducts(prevProducts => {
         const existingIds = new Set(prevProducts.map(p => p.productId));
-        const newProducts = response.data.products.filter(p => !existingIds.has(p.productId));
+        const newProducts = response.data.products.filter((p: ApiProduct) => !existingIds.has(p.productId));
         return [...prevProducts, ...newProducts];
       });
       setCurrentPage(nextPage);
