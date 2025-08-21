@@ -1,5 +1,27 @@
 import z from "zod/v3";
 
+// NEW: Order types based on Swagger documentation
+export interface CreateOrderRequest {
+  adressId: string; // Note: Backend uses "adressId" not "addressId"
+}
+
+export interface OrderProduct {
+  productId: string;
+  productName: string;
+  quantity: number;
+  totalPrice: number;
+}
+
+export interface UserOrder {
+  orderId: string;
+  orderDate: string; // ISO date string
+  address: string;
+  products: OrderProduct[];
+}
+
+export type UserOrdersResponse = UserOrder[];
+
+// EXISTING: Legacy order types (keeping for backwards compatibility)
 // Customer bilgileri
 export interface CustomerInfo {
   name: string;

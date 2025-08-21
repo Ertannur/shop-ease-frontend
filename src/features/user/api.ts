@@ -1,4 +1,9 @@
 import { api, USER_ENDPOINTS } from "@/lib";
+import { 
+  UpdateUserRequest,
+  ChangePasswordRequest,
+  ApiResponse 
+} from "@/Types";
 
 // Backend API'lerinin aktif olup olmadığını kontrol eden flag
 // Backend hazır olduğunda NEXT_PUBLIC_ENABLE_USER_APIS=true yapılabilir
@@ -125,6 +130,33 @@ export const updateCartQuantityAPI = async (productId: string, color: string, si
     return response.data;
   } catch (error: unknown) {
     console.error('❌ Update Cart Quantity API Error:', error);
+    throw error;
+  }
+};
+
+// NEW API Functions based on Swagger documentation
+export const updateUserAPI = async (data: UpdateUserRequest): Promise<ApiResponse> => {
+  try {
+    const response = await api.post<ApiResponse>(
+      USER_ENDPOINTS.updateUser,
+      data
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Update User API Error:', error);
+    throw error;
+  }
+};
+
+export const changePasswordAPI = async (data: ChangePasswordRequest): Promise<ApiResponse> => {
+  try {
+    const response = await api.post<ApiResponse>(
+      USER_ENDPOINTS.changePassword,
+      data
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Change Password API Error:', error);
     throw error;
   }
 };

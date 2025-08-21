@@ -1,39 +1,19 @@
 import { api, AUTH_ENDPOINTS } from "@/lib";
+import { 
+  RegisterRequest, 
+  LoginRequest, 
+  AuthResponse, 
+  ForgotPasswordRequest, 
+  ResetPasswordRequest 
+} from "@/Types";
 import { AxiosError } from 'axios';
 
-export type LoginDto = { email: string; password: string };
-export type RegisterDto = {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  email: string;
-  password: string;
-  dateOfBirth: string;
-  gender: 0 | 1 | 2; // 0: male, 1: female, 2: other
-};
-
-export type AuthResponse = {
-  success: boolean;
-  userId: string | null;
-  message: string;
-  token: {
-    accessToken: string;
-    expiration: string;
-    refreshToken?: string | null;
-  } | null;
-  user?: {
-    id: string;
-    email: string;
-    name?: string;
-    firstName?: string;
-    lastName?: string;
-    roles?: string[];
-  };
-};
+export type LoginDto = LoginRequest;
+export type RegisterDto = RegisterRequest;
 
 export const loginAPI = async (email: string, password: string): Promise<AuthResponse> => {
   try {
-    const response = await api.post<AuthResponse>('/Auth/login', {
+    const response = await api.post<AuthResponse>(AUTH_ENDPOINTS.login, {
       email,
       password
     });
@@ -63,7 +43,7 @@ export const loginAPI = async (email: string, password: string): Promise<AuthRes
 
 export const registerAPI = async (data: RegisterDto): Promise<AuthResponse> => {
   try {
-    const response = await api.post<AuthResponse>('/Auth/register', data);
+    const response = await api.post<AuthResponse>(AUTH_ENDPOINTS.register, data);
 
     // API response format'ını kontrol et
     if (!response.data.success) {
@@ -73,6 +53,53 @@ export const registerAPI = async (data: RegisterDto): Promise<AuthResponse> => {
     return response.data;
   } catch (error: unknown) {
     console.error('Register API Error:', error);
+    
+    if (error instanceof AxiosError) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+    }
+    
+    if (error instanceof Error) {
+      throw new Error(error.message || 'Network error occurred');
+    }
+    
+    throw new Error('Network error occurred');
+  }
+};
+
+export const forgotPasswordAPI = async (email: string): Promise<AuthResponse> => {
+  try {
+    const response = await api.post<AuthResponse>(
+      AUTH_ENDPOINTS.forgotPassword,
+      { email } as ForgotPasswordRequest
+    );
+
+    return response.data;
+  } catch (error: unknown) {
+    console.error('Forgot Password API Error:', error);
+    
+    if (error instanceof AxiosError) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+    }
+    
+    if (error instanceof Error) {
+      throw new Error(error.message || 'Network error occurred');
+    }
+    
+    throw new Error('Network error occurred');
+  }
+};
+
+export const resetPasswordAPI = async (data: ResetPasswordRequest): Promise<AuthResponse> => {
+  try {
+    const response = await api.post<AuthResponse>(AUTH_ENDPOINTS.resetPassword, data);
+
+    return response.data;
+  } catch (error: unknown) {
+    console.error('Reset Password API Error:', error);
     
     if (error instanceof AxiosError) {
       if (error.response?.data?.message) {
