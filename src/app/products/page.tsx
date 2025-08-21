@@ -1,9 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import axios from "axios";
 import { useLikeStore } from "@/stores";
 import { formatTL } from "@/lib";
 import AuthToast from "@/components/Toast/AuthToast";
+import { ApiProduct, ProductsResponse } from "@/Types";
 
 const ProductsPage = () => {
   const [toast, setToast] = useState<{
@@ -15,64 +17,93 @@ const ProductsPage = () => {
   const addToLikes = useLikeStore((state) => state.addToLikes);
   const isItemLiked = useLikeStore((state) => state.isItemLiked);
 
-  const products = [
-    {
-      id: 1,
-      name: "Loose Straight Jean",
-      description: "Açık mavi, Günlük",
-      price: 1000,
-      image: "/placeholder-product.jpg"
-    },
-    {
-      id: 2,
-      name: "Denim Ceket",
-      description: "Açık mavi, Günlük",
-      price: 1500,
-      image: "/placeholder-product.jpg"
-    },
-    {
-      id: 3,
-      name: "Deri Çanta",
-      description: "Siyah mavi, Bodo",
-      price: 1800,
-      image: "/placeholder-product.jpg"
-    },
-    {
-      id: 4,
-      name: "Güneş Gözlüğü",
-      description: "Kırmızı, Yazlık",
-      price: 2000,
-      image: "/placeholder-product.jpg"
-    },
-    {
-      id: 5,
-      name: "Sweatshirt",
-      description: "Turuncu, Lacıvert",
-      price: 700,
-      image: "/placeholder-product.jpg"
-    },
-    {
-      id: 6,
-      name: "Etek",
-      description: "Mavi, Desenli",
-      price: 600,
-      image: "/placeholder-product.jpg"
-    },
-    {
-      id: 7,
-      name: "Güneş Gözlüğü",
-      description: "Beyaz, Beyaz",
-      price: 1800,
-      image: "/placeholder-product.jpg"
-    },
-    {
-      id: 8,
-      name: "Kaban",
-      description: "Bej",
-      price: 1900,
-      image: "/placeholder-product.jpg"
+  const [products, setProducts] = useState<ApiProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    totalPage: 0,
+    totalCount: 0,
+    hasPreviousPage: false,
+    hasNextPage: false
+  });
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get<ProductsResponse>(
+          `https://eticaretapi-gghdgef9bzameteu.switzerlandnorth-01.azurewebsites.net/api/Product/GetProducts?page=${currentPage}&pageSize=8`
+        );
+        setProducts(response.data.products);
+        setPagination({
+          totalPage: response.data.totalPage,
+          totalCount: response.data.totalCount,
+          hasPreviousPage: response.data.hasPreviousPage,
+          hasNextPage: response.data.hasNextPage
+        });
+      } catch (err) {
+        setError('Ürünler yüklenirken bir hata oluştu');
+        console.error('Error fetching products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [currentPage]);
+
+  const loadMoreProducts = async () => {
+    if (loadingMore || !pagination.hasNextPage) return;
+    
+    try {
+      setLoadingMore(true);
+      const nextPage = currentPage + 1;
+      const response = await axios.get<ProductsResponse>(
+        `https://eticaretapi-gghdgef9bzameteu.switzerlandnorth-01.azurewebsites.net/api/Product/GetProducts?page=${nextPage}&pageSize=8`
+      );
+      
+      // Mevcut ürünlere yeni ürünleri ekle (duplicate kontrol ile)
+      setProducts(prevProducts => {
+        const existingIds = new Set(prevProducts.map(p => p.productId));
+        const newProducts = response.data.products.filter(p => !existingIds.has(p.productId));
+        return [...prevProducts, ...newProducts];
+      });
+      setCurrentPage(nextPage);
+      setPagination({
+        totalPage: response.data.totalPage,
+        totalCount: response.data.totalCount,
+        hasPreviousPage: response.data.hasPreviousPage,
+        hasNextPage: response.data.hasNextPage
+      });
+    } catch (err) {
+      console.error('Error loading more products:', err);
+    } finally {
+      setLoadingMore(false);
     }
-  ];
+  };
+
+  if (loading) {
+    return (
+      <div className="container py-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
+          <p className="mt-4 text-gray-600">Ürünler yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container py-8">
+        <div className="text-center">
+          <p className="text-red-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-8">
@@ -84,12 +115,18 @@ const ProductsPage = () => {
       {/* Ürün Grid'i */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product) => (
-          <Link key={product.id} href={`/products/${product.id}`} className="group cursor-pointer block">
+          <Link key={product.productId} href={`/products/${product.productId}`} className="group cursor-pointer block">
             {/* Ürün Görseli */}
-            <div className="relative aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden mb-4 group-hover:shadow-lg transition-shadow duration-300">
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300">
-                <span className="text-gray-500 text-lg">Placeholder</span>
-              </div>
+            <div className="relative bg-gray-200 rounded-lg overflow-hidden mb-4 group-hover:shadow-lg transition-shadow duration-300">
+              <img 
+                src={product.imageUrl} 
+                alt={product.name}
+                className="w-full aspect-[3/4] object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/placeholder-product.jpg";
+                }}
+              />
 
               {/* Hover'da görünen kalp ikonu */}
               <button
@@ -105,10 +142,10 @@ const ProductsPage = () => {
                   };
                   
                   addToLikes({
-                    id: product.id.toString(),
+                    id: product.productId,
                     name: product.name,
                     price: product.price,
-                    image: product.image,
+                    image: product.imageUrl,
                     selectedColor: "Varsayılan",
                     selectedSize: "M"
                   }, () => {
@@ -120,12 +157,12 @@ const ProductsPage = () => {
                     });
                   });
                 }}
-                className={`absolute top-4 right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-gray-100 z-10 ${isItemLiked(product.id.toString(), "Varsayılan", "M") ? 'text-red-500' : 'text-gray-600'
+                className={`absolute top-4 right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-gray-100 z-10 ${isItemLiked(product.productId, "Varsayılan", "M") ? 'text-red-500' : 'text-gray-600'
                   }`}
               >
                 <svg
                   className="w-4 h-4"
-                  fill={isItemLiked(product.id.toString(), "Varsayılan", "M") ? "currentColor" : "none"}
+                  fill={isItemLiked(product.productId, "Varsayılan", "M") ? "currentColor" : "none"}
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -136,13 +173,10 @@ const ProductsPage = () => {
             </div>
 
             {/* Ürün Bilgileri */}
-            <div className="space-y-1">
+            <div className="space-y-1 text-left">
               <h3 className="font-medium text-gray-900 group-hover:text-black transition-colors">
                 {product.name}
               </h3>
-              <p className="text-sm text-gray-500">
-                {product.description}
-              </p>
               <p className="font-semibold text-gray-900">
                 {formatTL(product.price)}
               </p>
@@ -152,11 +186,24 @@ const ProductsPage = () => {
       </div>
 
       {/* Daha Fazla Yükle Butonu */}
-      <div className="text-center mt-12">
-        <button className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors duration-300">
-          Daha Fazla Ürün Göster
-        </button>
-      </div>
+      {pagination.hasNextPage && (
+        <div className="text-center mt-12">
+          <button 
+            onClick={loadMoreProducts}
+            disabled={loadingMore}
+            className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
+          >
+            {loadingMore ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Yükleniyor...
+              </>
+            ) : (
+              'Daha Fazla Ürün Göster'
+            )}
+          </button>
+        </div>
+      )}
       
       {/* Auth Toast */}
       <AuthToast
