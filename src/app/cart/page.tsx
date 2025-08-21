@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,15 @@ const CartPage = () => {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
   const getTotalPrice = useCartStore((state) => state.getTotalPrice);
+  const loadUserCart = useCartStore((state) => state.loadUserCart);
   const isAuthenticated = useAuthStore((state) => state.isAuthed());
+
+  // Load user cart from backend when component mounts and user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadUserCart();
+    }
+  }, [isAuthenticated, loadUserCart]);
 
   const subtotal = getTotalPrice();
   const shipping = subtotal > 500 ? 0 : 29.99;

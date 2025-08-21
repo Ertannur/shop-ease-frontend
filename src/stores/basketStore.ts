@@ -6,6 +6,7 @@ import {
   updateQuantityAPI, 
   deleteBasketItemAPI 
 } from "@/features/basket";
+import { BasketItem } from "@/Types";
 
 // Helper function to get user-specific localStorage key
 const getUserSpecificKey = (baseKey: string): string => {
@@ -25,7 +26,8 @@ const getUserSpecificKey = (baseKey: string): string => {
 };
 
 export interface CartItem {
-  id: string;
+  id: string; // productId
+  basketItemId?: string; // Backend tarafından dönen basketItemId
   name: string;
   price: number;
   image: string;
@@ -37,18 +39,18 @@ export interface CartItem {
 interface CartState {
   items: CartItem[];
   // Actions
-  addToCart: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => Promise<void>;
+  addToCart: (item: Omit<CartItem, 'quantity' | 'basketItemId'> & { quantity?: number }) => Promise<void>;
   removeFromCart: (id: string, color: string, size: string) => Promise<void>;
   updateQuantity: (id: string, color: string, size: string, quantity: number) => Promise<void>;
   clearCart: () => void;
-  clearUserData: () => void; // Logout için özel temizlik
-  loadUserCart: () => Promise<void>; // Backend'ten kullanıcı sepetini yükle
+  clearUserData: () => void;
+  loadUserCart: () => Promise<void>;
+  syncWithBackend: () => Promise<void>; // Backend ile senkronizasyon
   // Computed values
   getTotalItems: () => number;
   getTotalPrice: () => number;
   getItemCount: (id: string, color: string, size: string) => number;
   isItemInCart: (id: string, color: string, size: string) => boolean;
-  // Auth check
   isAuthenticated: () => boolean;
 }
 
@@ -57,30 +59,25 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
 
-      // Authentication check helper
       isAuthenticated: () => {
         return typeof window !== 'undefined' ? !!localStorage.getItem('token') : false;
       },
 
       addToCart: async (newItem) => {
         try {
-          // Eğer kullanıcı authenticated ise backend'e de ekle
           if (get().isAuthenticated()) {
-            await addToCartAPI(
-              newItem.id, 
-              newItem.selectedColor, 
-              newItem.selectedSize, 
-              newItem.quantity || 1
-            );
+            // Backend'e sadece productId ve quantity gönder
+            await addItemToBasketAPI(newItem.id, newItem.quantity || 1);
+            // Backend'den güncel sepet verilerini yükle
+            await get().loadUserCart();
+            return;
           }
         } catch (error) {
           console.error('Add to cart API failed:', error);
-          // Backend hatası olsa bile local storage'a ekle
         }
 
-        // Local state'i güncelle (authenticated olsun olmasın)
+        // Authentication yoksa veya API hatası varsa local storage kullan
         set((state) => {
-          // Aynı ürün, renk ve beden kombinasyonu var mı kontrol et
           const existingItemIndex = state.items.findIndex(
             item =>
               item.id === newItem.id &&
@@ -89,12 +86,10 @@ export const useCartStore = create<CartState>()(
           );
 
           if (existingItemIndex !== -1) {
-            // Var olan ürünün miktarını artır
             const updatedItems = [...state.items];
             updatedItems[existingItemIndex].quantity += newItem.quantity || 1;
             return { items: updatedItems };
           } else {
-            // Yeni ürün ekle
             return {
               items: [...state.items, { ...newItem, quantity: newItem.quantity || 1 }]
             };
@@ -103,17 +98,21 @@ export const useCartStore = create<CartState>()(
       },
 
       removeFromCart: async (id, color, size) => {
+        const currentItem = get().items.find(
+          item => item.id === id && item.selectedColor === color && item.selectedSize === size
+        );
+
         try {
-          // Eğer kullanıcı authenticated ise backend'ten de sil
-          if (get().isAuthenticated()) {
-            await removeFromCartAPI(id, color, size);
+          if (get().isAuthenticated() && currentItem?.basketItemId) {
+            await deleteBasketItemAPI(currentItem.basketItemId);
+            await get().loadUserCart();
+            return;
           }
         } catch (error) {
           console.error('Remove from cart API failed:', error);
-          // Backend hatası olsa bile local'den sil
         }
 
-        // Local state'ten sil
+        // Local storage'dan sil
         set((state) => ({
           items: state.items.filter(item =>
             !(item.id === id && item.selectedColor === color && item.selectedSize === size)
@@ -127,24 +126,29 @@ export const useCartStore = create<CartState>()(
           return;
         }
 
+        const currentItem = get().items.find(
+          item => item.id === id && item.selectedColor === color && item.selectedSize === size
+        );
+
         try {
-          // Eğer kullanıcı authenticated ise backend'i güncelle
-          if (get().isAuthenticated()) {
-            await updateCartQuantityAPI(id, color, size, quantity);
+          if (get().isAuthenticated() && currentItem?.basketItemId) {
+            await updateQuantityAPI(currentItem.basketItemId, quantity);
+            await get().loadUserCart();
+            return;
           }
         } catch (error) {
-          console.error('Update cart quantity API failed:', error);
-          // Backend hatası olsa bile local'i güncelle
+          console.error('Update quantity API failed:', error);
         }
 
-        // Local state'i güncelle
-        set((state) => ({
-          items: state.items.map(item =>
-            item.id === id && item.selectedColor === color && item.selectedSize === size
+        // Local storage güncelle
+        set((state) => {
+          const updatedItems = state.items.map(item =>
+            (item.id === id && item.selectedColor === color && item.selectedSize === size)
               ? { ...item, quantity }
               : item
-          )
-        }));
+          );
+          return { items: updatedItems };
+        });
       },
 
       clearCart: () => {
@@ -152,23 +156,38 @@ export const useCartStore = create<CartState>()(
       },
 
       clearUserData: () => {
-        // Logout durumunda sadece local state'i sıfırla
-        // localStorage persist edilecek ama farklı key ile
         set({ items: [] });
       },
 
       loadUserCart: async () => {
-        // Authentication kontrolü
         if (!get().isAuthenticated()) {
           return;
         }
-        
+
         try {
-          const cartItems = await getUserCartAPI();
-          // Backend'ten gelen veriyi local state'e yükle
-          set({ items: cartItems || [] });
+          const basketItems: BasketItem[] = await getBasketItemsAPI();
+          
+          // Backend verilerini CartItem formatına çevir
+          const cartItems: CartItem[] = basketItems.map(item => ({
+            id: '', // Backend'de productId yok, boş bırakıyoruz
+            basketItemId: item.basketItemId,
+            name: item.name,
+            price: item.price,
+            image: item.imageUrl || '/placeholder-product.jpg',
+            selectedColor: 'Varsayılan', // Backend'de color/size bilgisi yok
+            selectedSize: 'M',
+            quantity: item.quantity
+          }));
+
+          set({ items: cartItems });
         } catch (error) {
           console.error('Load user cart failed:', error);
+        }
+      },
+
+      syncWithBackend: async () => {
+        if (get().isAuthenticated()) {
+          await get().loadUserCart();
         }
       },
 

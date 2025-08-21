@@ -1,10 +1,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { 
-  getUserFavoritesAPI, 
-  addToFavoritesAPI, 
-  removeFromFavoritesAPI 
-} from "@/features/user";
+  addFavoriteProductAPI, 
+  deleteFavoriteProductAPI 
+} from "@/features/product";
 
 // Helper function to get user-specific localStorage key
 const getUserSpecificKey = (baseKey: string): string => {
@@ -71,8 +70,8 @@ export const useLikeStore = create<LikeState>()(
         }
         
         try {
-          // Backend'e ekle
-          await addToFavoritesAPI(newItem.id, newItem.selectedColor, newItem.selectedSize);
+          // Backend'e ekle (yeni Swagger API kullanımı)
+          await addFavoriteProductAPI(newItem.id);
           
           // Local state'i güncelle
           set((state) => {
@@ -115,8 +114,8 @@ export const useLikeStore = create<LikeState>()(
 
       removeFromLikes: async (id, color, size) => {
         try {
-          // Backend'ten sil
-          await removeFromFavoritesAPI(id, color, size);
+          // Backend'ten sil (yeni Swagger API kullanımı)
+          await deleteFavoriteProductAPI(id);
         } catch (error) {
           console.error('Remove from favorites failed:', error);
           // Backend hatası olsa bile local state'ten sil
@@ -148,9 +147,9 @@ export const useLikeStore = create<LikeState>()(
         }
         
         try {
-          const favorites = await getUserFavoritesAPI();
-          // Backend'ten gelen veriyi local state'e yükle
-          set({ items: favorites || [] });
+          // Note: Swagger'da user favorites getirme endpoint'i yok
+          // Bu fonksiyon şimdilik sadece placeholder olarak kalabilir
+          console.log('User favorites loading - API endpoint not available in current Swagger');
         } catch (error) {
           console.error('Load user favorites failed:', error);
         }
