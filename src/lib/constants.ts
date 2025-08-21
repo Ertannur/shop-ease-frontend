@@ -1,5 +1,5 @@
 // src/lib/constants.ts
-export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || ""; // Azure backend URL
+export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || ""; // Backend domain URL
 export const AUTH_ENDPOINTS = {
   login: "/api/Auth/Login",
   register: "/api/Auth/Register",
