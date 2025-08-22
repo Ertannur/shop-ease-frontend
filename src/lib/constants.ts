@@ -1,5 +1,7 @@
 // src/lib/constants.ts
 export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || ""; // Backend domain URL
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://eticaretapi-gghdgef9bzameteu.switzerlandnorth-01.azurewebsites.net"; // Azure backend URL
+
 export const AUTH_ENDPOINTS = {
   login: "/api/Auth/Login",
   register: "/api/Auth/Register",
@@ -10,8 +12,17 @@ export const AUTH_ENDPOINTS = {
 } as const;
 
 export const USER_ENDPOINTS = {
+  getUserProfile: "/api/User/GetUserProfile",
   updateUser: "/api/User/UpdateUser",
   changePassword: "/api/User/ChangePassword",
+  getUserInfo: "/api/User", // Alternative endpoint for user info
+  favorites: "/api/User/Favorites",
+  cart: "/api/User/Cart",
+  addToFavorites: "/api/User/Favorites/Add",
+  removeFromFavorites: "/api/User/Favorites/Remove",
+  addToCart: "/api/User/Cart/Add",
+  removeFromCart: "/api/User/Cart/Remove",
+  updateCartQuantity: "/api/User/Cart/Update",
 } as const;
 
 export const PRODUCT_ENDPOINTS = {

@@ -1,12 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useLikeStore } from "@/stores";
 import { formatTL } from "@/lib";
 import AuthToast from "@/components/Toast/AuthToast";
-import { ApiProduct, ProductsResponse } from "@/Types";
-import { api } from "@/lib/apiClient";
-import { PRODUCT_ENDPOINTS } from "@/lib/constants";
+import { ApiProduct } from "@/Types";
+import { getProductsAPI } from "@/features/product/api";
 
 const ProductsPage = () => {
   const [toast, setToast] = useState<{
@@ -34,15 +34,13 @@ const ProductsPage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await api.get<ProductsResponse>(
-          `${PRODUCT_ENDPOINTS.getProducts}?page=${currentPage}&pageSize=8`
-        );
-        setProducts(response.data.products);
+        const response = await getProductsAPI(currentPage, 8);
+        setProducts(response.products);
         setPagination({
-          totalPage: response.data.totalPage,
-          totalCount: response.data.totalCount,
-          hasPreviousPage: response.data.hasPreviousPage,
-          hasNextPage: response.data.hasNextPage
+          totalPage: response.totalPage,
+          totalCount: response.totalCount,
+          hasPreviousPage: response.hasPreviousPage,
+          hasNextPage: response.hasNextPage
         });
       } catch (err) {
         setError('Ürünler yüklenirken bir hata oluştu');
@@ -61,22 +59,20 @@ const ProductsPage = () => {
     try {
       setLoadingMore(true);
       const nextPage = currentPage + 1;
-      const response = await api.get<ProductsResponse>(
-        `${PRODUCT_ENDPOINTS.getProducts}?page=${nextPage}&pageSize=8`
-      );
+      const response = await getProductsAPI(nextPage, 8);
       
       // Mevcut ürünlere yeni ürünleri ekle (duplicate kontrol ile)
       setProducts(prevProducts => {
         const existingIds = new Set(prevProducts.map(p => p.productId));
-        const newProducts = response.data.products.filter((p: ApiProduct) => !existingIds.has(p.productId));
+        const newProducts = response.products.filter((p: ApiProduct) => !existingIds.has(p.productId));
         return [...prevProducts, ...newProducts];
       });
       setCurrentPage(nextPage);
       setPagination({
-        totalPage: response.data.totalPage,
-        totalCount: response.data.totalCount,
-        hasPreviousPage: response.data.hasPreviousPage,
-        hasNextPage: response.data.hasNextPage
+        totalPage: response.totalPage,
+        totalCount: response.totalCount,
+        hasPreviousPage: response.hasPreviousPage,
+        hasNextPage: response.hasNextPage
       });
     } catch (err) {
       console.error('Error loading more products:', err);
@@ -119,13 +115,14 @@ const ProductsPage = () => {
           <Link key={product.productId} href={`/products/${product.productId}`} className="group cursor-pointer block">
             {/* Ürün Görseli */}
             <div className="relative bg-gray-200 rounded-lg overflow-hidden mb-4 group-hover:shadow-lg transition-shadow duration-300">
-              <img 
-                src={product.imageUrl} 
+              <Image 
+                src={product.imageUrl || "/placeholder-product.jpg"} 
                 alt={product.name}
+                width={300}
+                height={400}
                 className="w-full aspect-[3/4] object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = "/placeholder-product.jpg";
+                onError={() => {
+                  // Handle error if needed
                 }}
               />
 

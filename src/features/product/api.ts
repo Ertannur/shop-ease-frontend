@@ -12,9 +12,36 @@ import {
   AddProductDetailRequest, 
   AddStockRequest, 
   AddProductImagesRequest,
-  ApiResponse 
+  ApiResponse,
+  ProductsResponse,
+  ApiProduct
 } from "@/Types";
 
+// Get all products with pagination
+export const getProductsAPI = async (page: number = 1, pageSize: number = 8): Promise<ProductsResponse> => {
+  try {
+    const response = await api.get<ProductsResponse>(
+      `${PRODUCT_ENDPOINTS.getProducts}?page=${page}&pageSize=${pageSize}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Get Products API Error:', error);
+    throw error;
+  }
+};
+
+// Get single product by ID
+export const getProductAPI = async (productId: string): Promise<ApiProduct> => {
+  try {
+    const response = await api.get<ApiProduct>(
+      `${PRODUCT_ENDPOINTS.getProduct}/${productId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Get Product API Error:', error);
+    throw error;
+  }
+};
 export const addProductAPI = async (data: AddProductRequest): Promise<AddProductResponse> => {
   try {
     const response = await api.post<AddProductResponse>(
