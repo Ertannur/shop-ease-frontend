@@ -1,4 +1,5 @@
-import { api, AUTH_ENDPOINTS } from "@/lib";
+import { api } from "@/lib/apiClient";
+import { AUTH_ENDPOINTS } from "@/lib/constants";
 import { 
   RegisterRequest, 
   LoginRequest, 

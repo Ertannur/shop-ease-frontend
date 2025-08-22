@@ -1,8 +1,10 @@
-import { api, USER_ENDPOINTS } from "@/lib";
+import { api } from "@/lib/apiClient";
+import { USER_ENDPOINTS } from "@/lib/constants";
 import { 
   UpdateUserRequest,
   ChangePasswordRequest,
-  ApiResponse 
+  ApiResponse,
+  ApiUser
 } from "@/Types";
 
 // Backend API'lerinin aktif olup olmadığını kontrol eden flag
