@@ -13,6 +13,8 @@ const ProductsPage = () => {
     message: string;
     position?: { x: number; y: number };
   }>({ show: false, message: '' });
+
+  const Base_Url = "https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net"
   
   const addToLikes = useLikeStore((state) => state.addToLikes);
   const isItemLiked = useLikeStore((state) => state.isItemLiked);
@@ -33,8 +35,9 @@ const ProductsPage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        
         const response = await axios.get<ProductsResponse>(
-          `https://eticaretapi-gghdgef9bzameteu.switzerlandnorth-01.azurewebsites.net/api/Product/GetProducts?page=${currentPage}&pageSize=8`
+          `${Base_Url}/api/Product/GetProducts?page=${currentPage}&pageSize=8`
         );
         setProducts(response.data.products);
         setPagination({
