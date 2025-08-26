@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Raleway } from "next/font/google";
 import "./globals.css";
 import { Navbar, Footer } from "@/components";
+import { SupportButton } from "@/components/LiveSupport";
 
 
 const geistSans = Geist({
@@ -75,6 +76,7 @@ export default function RootLayout({
         <Navbar />
         {children}
         <Footer />
+        <SupportButton />
       </body>
     </html>
   );
