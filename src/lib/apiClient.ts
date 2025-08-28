@@ -1,8 +1,8 @@
 import axios from "axios";
-import { BASE_URL } from "./constants";
+import { API_BASE } from "./constants";
 
 export const api = axios.create({
-  baseURL: BASE_URL || 'https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net',
+  baseURL: API_BASE || 'https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net/api',
   withCredentials: false,
   headers: {
     'Content-Type': 'application/json',

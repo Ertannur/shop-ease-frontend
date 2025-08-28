@@ -2,18 +2,24 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import axios from "axios";
 import { useLikeStore } from "@/stores";
 import { formatTL } from "@/lib";
 import AuthToast from "@/components/Toast/AuthToast";
-import { ApiProduct } from "@/Types";
-import { getProductsAPI } from "@/features/product/api";
+import { ApiProduct, ProductsResponse } from "@/Types";
 
 const ProductsPage = () => {
+  const searchParams = useSearchParams();
+  const category = searchParams.get('category');
+  
   const [toast, setToast] = useState<{
     show: boolean;
     message: string;
     position?: { x: number; y: number };
   }>({ show: false, message: '' });
+
+  const Base_Url = "https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net"
   
   const addToLikes = useLikeStore((state) => state.addToLikes);
   const isItemLiked = useLikeStore((state) => state.isItemLiked);
@@ -34,13 +40,24 @@ const ProductsPage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await getProductsAPI(currentPage, 8);
-        setProducts(response.products);
+        
+        let apiUrl = `${Base_Url}/api/Product/GetProducts?page=${currentPage}&pageSize=8`;
+        
+        // Kategori parametresi varsa ekle
+        if (category) {
+          apiUrl += `&category=${category}`;
+        }
+        
+        const response = await axios.get<ProductsResponse>(apiUrl);
+        console.log('API Response:', response.data);
+        console.log('Products:', response.data.products);
+        console.log('API URL:', apiUrl);
+        setProducts(response.data.products);
         setPagination({
-          totalPage: response.totalPage,
-          totalCount: response.totalCount,
-          hasPreviousPage: response.hasPreviousPage,
-          hasNextPage: response.hasNextPage
+          totalPage: response.data.totalPage,
+          totalCount: response.data.totalCount,
+          hasPreviousPage: response.data.hasPreviousPage,
+          hasNextPage: response.data.hasNextPage
         });
       } catch (err) {
         setError('Ürünler yüklenirken bir hata oluştu');
@@ -51,7 +68,7 @@ const ProductsPage = () => {
     };
 
     fetchProducts();
-  }, [currentPage]);
+  }, [currentPage, category]);
 
   const loadMoreProducts = async () => {
     if (loadingMore || !pagination.hasNextPage) return;
@@ -59,20 +76,27 @@ const ProductsPage = () => {
     try {
       setLoadingMore(true);
       const nextPage = currentPage + 1;
-      const response = await getProductsAPI(nextPage, 8);
+      let apiUrl = `${Base_Url}/api/Product/GetProducts?page=${nextPage}&pageSize=8`;
+      
+      // Kategori parametresi varsa ekle
+      if (category) {
+        apiUrl += `&category=${category}`;
+      }
+      
+      const response = await axios.get<ProductsResponse>(apiUrl);
       
       // Mevcut ürünlere yeni ürünleri ekle (duplicate kontrol ile)
       setProducts(prevProducts => {
         const existingIds = new Set(prevProducts.map(p => p.productId));
-        const newProducts = response.products.filter((p: ApiProduct) => !existingIds.has(p.productId));
+        const newProducts = response.data.products.filter((p: ApiProduct) => !existingIds.has(p.productId));
         return [...prevProducts, ...newProducts];
       });
       setCurrentPage(nextPage);
       setPagination({
-        totalPage: response.totalPage,
-        totalCount: response.totalCount,
-        hasPreviousPage: response.hasPreviousPage,
-        hasNextPage: response.hasNextPage
+        totalPage: response.data.totalPage,
+        totalCount: response.data.totalCount,
+        hasPreviousPage: response.data.hasPreviousPage,
+        hasNextPage: response.data.hasNextPage
       });
     } catch (err) {
       console.error('Error loading more products:', err);
@@ -106,7 +130,9 @@ const ProductsPage = () => {
     <div className="container py-8">
       {/* Başlık */}
       <div className="mb-8">
-        <h1 className="text-3xl font-normal">Yeni Ürünler</h1>
+        <h1 className="text-3xl font-normal">
+          {category ? `${category.charAt(0).toUpperCase() + category.slice(1)} Ürünleri` : 'Yeni Ürünler'}
+        </h1>
       </div>
 
       {/* Ürün Grid'i */}
@@ -121,8 +147,9 @@ const ProductsPage = () => {
                 width={300}
                 height={400}
                 className="w-full aspect-[3/4] object-cover"
-                onError={() => {
-                  // Handle error if needed
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'%3E%3Crect width='300' height='400' fill='%23cccccc'/%3E%3Ctext x='150' y='200' text-anchor='middle' fill='%23666666' font-family='Arial' font-size='16'%3EÜrün Resmi%3C/text%3E%3C/svg%3E";
                 }}
               />
 
@@ -185,7 +212,7 @@ const ProductsPage = () => {
 
       {/* Daha Fazla Yükle Butonu */}
       {pagination.hasNextPage && (
-        <div className="text-center mt-12">
+      <div className="text-center mt-12">
           <button 
             onClick={loadMoreProducts}
             disabled={loadingMore}
@@ -199,8 +226,8 @@ const ProductsPage = () => {
             ) : (
               'Daha Fazla Ürün Göster'
             )}
-          </button>
-        </div>
+        </button>
+      </div>
       )}
       
       {/* Auth Toast */}

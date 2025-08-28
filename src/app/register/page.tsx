@@ -91,8 +91,8 @@ export default function RegisterPage() {
       setLoading(false);
       return;
     }
-    if (!/^\+?\d{10,15}$/.test(form.phoneNumber.replace(/\s/g, ""))) {
-      setErr("Lütfen geçerli bir telefon numarası giriniz (10‑15 haneli).");
+    if (!/^(?:\+90|0)?(?:\d{10})$/.test(form.phoneNumber.replace(/\s/g, ""))) {
+      setErr("Lütfen geçerli bir telefon numarası giriniz (örn: 05XX XXX XX XX veya +905XX XXX XX XX).");
       setLoading(false);
       return;
     }
