@@ -33,11 +33,11 @@ export type AuthResponse = {
 
 export const loginAPI = async (email: string, password: string): Promise<AuthResponse> => {
   try {
-    const response = await api.post<AuthResponse>('/Auth/login', {
+    const response = await api.post<AuthResponse>('/Auth/Login', {
       email,
       password
     });
-
+    console.log(response);
     // API response format'ını kontrol et
     if (!response.data.success) {
       throw new Error(response.data.message || 'Login failed');
