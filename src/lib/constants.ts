@@ -6,17 +6,16 @@ export const SIGNALR_HUB_URL = `${BASE_URL}/chatHub`; // SignalR hub URL
 export const AUTH_ENDPOINTS = {
   login: "/api/Auth/Login",
   register: "/api/Auth/Register",
-  refresh: "/api/Auth/RefreshTokenLogin",
-  roles: "/api/Auth/Roles",
+  refreshTokenLogin: "/api/Auth/RefreshTokenLogin", // Fixed naming
   forgotPassword: "/api/Auth/ForgotPassword",
   resetPassword: "/api/Auth/ResetPassword",
 } as const;
 
 export const USER_ENDPOINTS = {
-  updateUser: "/api/user/update-profile",
-  getUserById: "/api/user/users", // This endpoint requires Support+ role
-  changePassword: "/api/user/change-password",
-  getCurrentUser: "/api/user/profile", // Get current user profile
+  updateUser: "/api/User/UpdateUser",
+  getUserById: "/api/User/GetUserById",
+  changePassword: "/api/User/ChangePassword", 
+  getCurrentUser: "/api/User/GetCurrentUser",
 } as const;
 
 export const PRODUCT_ENDPOINTS = {

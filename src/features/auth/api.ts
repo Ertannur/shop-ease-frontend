@@ -1,5 +1,5 @@
 import { api } from "@/lib/apiClient";
-import { AUTH_ENDPOINTS } from "@/lib/constants";
+import { AUTH_ENDPOINTS, USER_ENDPOINTS } from "@/lib/constants";
 import { 
   RegisterRequest, 
   LoginRequest, 
@@ -116,10 +116,25 @@ export const resetPasswordAPI = async (data: ResetPasswordRequest): Promise<Auth
   }
 };
 
-// src/features/auth/api.ts
+// User Service
+export const userService = {
+  async getCurrentUser() {
+    try {
+      const response = await api.get(USER_ENDPOINTS.getCurrentUser);
+      return response;
+    } catch (error) {
+      console.error('Get Current User Error:', error);
+      throw error;
+    }
+  }
+};
+
+// src/features/auth/api.ts  
 export async function getSession() {
   try {
-    const res = await api.get(AUTH_ENDPOINTS.roles);
+    // Note: There's no /api/Auth/Roles endpoint in backend documentation
+    // This might need to be updated based on actual backend implementation
+    const res = await api.get('/api/auth/verify'); // Placeholder endpoint
     const payload = res.data;
     if (payload?.user) return payload.user;
     if (payload?.email || payload?.id) return payload; // bazı backendlere uyum

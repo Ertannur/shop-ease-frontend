@@ -10,7 +10,7 @@ import {
 
 export const getBasketItemsAPI = async (): Promise<BasketItemsResponse> => {
   try {
-    const response = await api.get<BasketItemsResponse>(
+    const response = await api.post<BasketItemsResponse>( // Fixed: Backend uses POST
       BASKET_ENDPOINTS.getBasketItems
     );
     return response.data;

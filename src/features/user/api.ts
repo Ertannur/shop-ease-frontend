@@ -1,17 +1,16 @@
 import { api } from "@/lib/apiClient";
-import { USER_ENDPOINTS } from "@/lib/constants";
+import { USER_ENDPOINTS, PRODUCT_ENDPOINTS, BASKET_ENDPOINTS } from "@/lib/constants";
 import { 
   UpdateUserRequest,
   ChangePasswordRequest,
-  ApiResponse,
-  ApiUser
+  ApiResponse
 } from "@/Types";
 
 // Backend API'lerinin aktif olup olmadığını kontrol eden flag
 // Backend hazır olduğunda NEXT_PUBLIC_ENABLE_USER_APIS=true yapılabilir
 const API_ENABLED = process.env.NEXT_PUBLIC_ENABLE_USER_APIS === 'true' || false;
 
-// User Favorites API
+// User Favorites API - Use PRODUCT_ENDPOINTS
 export const getUserFavoritesAPI = async () => {
   if (!API_ENABLED) {
     console.info('🔄 User Favorites API disabled - using localStorage only');
@@ -19,7 +18,7 @@ export const getUserFavoritesAPI = async () => {
   }
   
   try {
-    const response = await api.get(USER_ENDPOINTS.favorites);
+    const response = await api.get(PRODUCT_ENDPOINTS.getFavoriteProducts); // Fixed endpoint
     return response.data;
   } catch (error: unknown) {
     console.error('❌ Get Favorites API Error:', error);
@@ -27,17 +26,15 @@ export const getUserFavoritesAPI = async () => {
   }
 };
 
-export const addToFavoritesAPI = async (productId: string, color: string, size: string) => {
+export const addToFavoritesAPI = async (productId: string, _color?: string, _size?: string) => {
   if (!API_ENABLED) {
     console.info('🔄 Add to Favorites API disabled - using localStorage only');
     return { success: true };
   }
   
   try {
-    const response = await api.post(USER_ENDPOINTS.addToFavorites, {
-      productId,
-      color,
-      size
+    const response = await api.post(PRODUCT_ENDPOINTS.addFavoriteProduct, {
+      productId // Backend only needs productId according to documentation
     });
     return response.data;
   } catch (error: unknown) {
@@ -46,15 +43,15 @@ export const addToFavoritesAPI = async (productId: string, color: string, size: 
   }
 };
 
-export const removeFromFavoritesAPI = async (productId: string, color: string, size: string) => {
+export const removeFromFavoritesAPI = async (productId: string, _color?: string, _size?: string) => {
   if (!API_ENABLED) {
     console.info('🔄 Remove from Favorites API disabled - using localStorage only');
     return { success: true };
   }
   
   try {
-    const response = await api.delete(USER_ENDPOINTS.removeFromFavorites, {
-      data: { productId, color, size }
+    const response = await api.post(PRODUCT_ENDPOINTS.deleteFavoriteProduct, {
+      productId // Backend only needs productId according to documentation
     });
     return response.data;
   } catch (error: unknown) {
@@ -63,7 +60,7 @@ export const removeFromFavoritesAPI = async (productId: string, color: string, s
   }
 };
 
-// User Cart API
+// User Cart API - Use BASKET_ENDPOINTS
 export const getUserCartAPI = async () => {
   if (!API_ENABLED) {
     console.info('🔄 User Cart API disabled - using localStorage only');
@@ -71,7 +68,7 @@ export const getUserCartAPI = async () => {
   }
   
   try {
-    const response = await api.get(USER_ENDPOINTS.cart);
+    const response = await api.get(BASKET_ENDPOINTS.getBasketItems); // Fixed endpoint
     return response.data;
   } catch (error: unknown) {
     console.error('❌ Get Cart API Error:', error);
@@ -79,18 +76,16 @@ export const getUserCartAPI = async () => {
   }
 };
 
-export const addToCartAPI = async (productId: string, color: string, size: string, quantity: number) => {
+export const addToCartAPI = async (productId: string, _color?: string, _size?: string, quantity: number = 1) => {
   if (!API_ENABLED) {
     console.info('🔄 Add to Cart API disabled - using localStorage only');
     return { success: true };
   }
   
   try {
-    const response = await api.post(USER_ENDPOINTS.addToCart, {
+    const response = await api.post(BASKET_ENDPOINTS.addItemToBasket, {
       productId,
-      color,
-      size,
-      quantity
+      quantity // Backend needs productId and quantity according to documentation
     });
     return response.data;
   } catch (error: unknown) {
@@ -99,15 +94,15 @@ export const addToCartAPI = async (productId: string, color: string, size: strin
   }
 };
 
-export const removeFromCartAPI = async (productId: string, color: string, size: string) => {
+export const removeFromCartAPI = async (basketItemId: string, _color?: string, _size?: string) => {
   if (!API_ENABLED) {
     console.info('🔄 Remove from Cart API disabled - using localStorage only');
     return { success: true };
   }
   
   try {
-    const response = await api.delete(USER_ENDPOINTS.removeFromCart, {
-      data: { productId, color, size }
+    const response = await api.post(BASKET_ENDPOINTS.deleteBasketItem, {
+      basketItemId // Backend needs basketItemId according to documentation
     });
     return response.data;
   } catch (error: unknown) {
@@ -116,18 +111,16 @@ export const removeFromCartAPI = async (productId: string, color: string, size: 
   }
 };
 
-export const updateCartQuantityAPI = async (productId: string, color: string, size: string, quantity: number) => {
+export const updateCartQuantityAPI = async (basketItemId: string, quantity: number, _color?: string, _size?: string) => {
   if (!API_ENABLED) {
     console.info('🔄 Update Cart Quantity API disabled - using localStorage only');
     return { success: true };
   }
   
   try {
-    const response = await api.put(USER_ENDPOINTS.updateCartQuantity, {
-      productId,
-      color,
-      size,
-      quantity
+    const response = await api.post(BASKET_ENDPOINTS.updateQuantity, {
+      basketItemId,
+      quantity // Backend needs basketItemId and quantity according to documentation
     });
     return response.data;
   } catch (error: unknown) {

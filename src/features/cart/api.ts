@@ -11,7 +11,7 @@ import {
 export const getBackendCartAPI = async (): Promise<BasketItem[]> => {
   try {
     console.log('🔄 Fetching cart from backend...');
-    const response = await api.get<BasketItem[]>(BASKET_ENDPOINTS.getBasketItems);
+    const response = await api.post<BasketItem[]>(BASKET_ENDPOINTS.getBasketItems); // Fixed: Backend uses POST
     console.log('✅ Backend cart fetched successfully:', response.data);
     return response.data;
   } catch (error: unknown) {

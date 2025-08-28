@@ -35,7 +35,7 @@ export const getProductsAPI = async (page: number = 1, pageSize: number = 8): Pr
 export const getProductAPI = async (productId: string): Promise<ApiProduct> => {
   try {
     const response = await api.get<ApiProduct>(
-      `${PRODUCT_ENDPOINTS.getProductById}/${productId}` // Updated to use correct endpoint
+      `${PRODUCT_ENDPOINTS.getProductById}?id=${productId}` // Fixed: uses query parameter
     );
     return response.data;
   } catch (error) {
