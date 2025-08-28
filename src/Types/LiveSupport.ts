@@ -1,3 +1,19 @@
+// Chat model matching backend structure
+export interface ChatMessage {
+  id?: string;
+  userId: string;
+  toUserId: string;
+  message: string;
+  createdDate: string;
+}
+
+// User model for support/chat users
+export interface ChatUser {
+  id: string;
+  fullName: string;
+}
+
+// Legacy support message interface (kept for backward compatibility)
 export interface SupportMessage {
   id: string;
   message: string;

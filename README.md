@@ -2,14 +2,91 @@
 
 ShopEase, React, Next.js ve Tailwind CSS kullanılarak geliştirilmiş **yüksek performanslı** modern bir e-ticaret platformudur. Kullanıcı dostu arayüzü, hızlı yüklenme süreleri ve zengin özellik seti ile kapsamlı bir alışveriş deneyimi sunar.
 
-## 🚀 Teknolojiler
+## � Backend Entegrasyonu
 
-- **Next.js 15.4.5** - React framework'ü (App Router)
+### **API Yapılandırması**
+- **Base URL**: `https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net`
+- **Swagger Dokümantasyonu**: `https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net/swagger/index.html`
+- **SignalR Hub**: `https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net/chatHub`
+
+### **Test Kullanıcı Bilgileri**
+- **Support Rolü**:
+  - Email: `umutcanguncu@icloud.com`
+  - Password: `Umut135,`
+
+### **Kimlik Doğrulama**
+- **Zorunlu Header**: `Authorization: Bearer {token}`
+- **Token Tabanlı**: JWT Authentication
+- **Rol Sistemi**: User, Support, Admin
+- **Varsayılan Rol**: User (kayıt sonrası)
+- **401 Unauthorized**: Token eksik/geçersiz
+- **403 Forbidden**: Yetkisiz erişim
+
+## �🚀 Teknolojiler
+
+- **Next.js 15.4.6** - React framework'ü (App Router)
 - **React 19.1.0** - UI kütüphanesi
 - **TypeScript** - Tip güvenliği
 - **Tailwind CSS v4** - Modern CSS framework'ü
 - **Zustand** - Performanslı state management
+- **SignalR** - Real-time chat sistemi
+- **Axios** - HTTP client
 - **Next.js Image** - Optimize edilmiş görsel yükleme
+
+## 📋 Backend API Endpoints
+
+### **Auth Controller** `/api/auth`
+- `POST /api/auth/register` - Kullanıcı kayıt
+- `POST /api/auth/login` - Kullanıcı giriş
+- `POST /api/auth/confirm-email?token={token}` - Email doğrulama
+- `POST /api/auth/refresh-token` - Token yenileme
+- `POST /api/auth/forgot-password?email={email}` - Şifre sıfırlama
+- `POST /api/auth/reset-password` - Şifre yenileme
+
+### **User Controller** `/api/user` *(Bearer Token Gerekli)*
+- `GET /api/user/users` - Tüm kullanıcılar (Support+)
+- `GET /api/user/profile` - Kullanıcı profili
+- `PUT /api/user/update-profile` - Profil güncelleme
+- `PUT /api/user/change-password` - Şifre değiştirme
+- `POST /api/user/upload-profile-picture` - Profil resmi
+
+### **Product Controller** `/api/products`
+- `GET /api/products` - Tüm ürünler
+- `GET /api/products/{id}` - Tek ürün detay
+- `GET /api/products/search?searchText={text}` - Ürün arama
+- `GET /api/products/filter?category={category}` - Kategori filtre
+
+### **Address Controller** `/api/addres` *(Bearer Token Gerekli)*
+- `GET /api/addres` - Kullanıcı adresleri
+- `POST /api/addres` - Yeni adres ekleme
+- `PUT /api/addres/{id}` - Adres güncelleme
+- `DELETE /api/addres/{id}` - Adres silme
+
+### **Basket Controller** `/api/basket` *(Bearer Token Gerekli)*
+- `GET /api/basket` - Sepet görüntüleme
+- `POST /api/basket` - Sepete ürün ekleme
+- `DELETE /api/basket/remove?productId={id}` - Üründen çıkarma
+- `DELETE /api/basket/clear` - Sepeti temizleme
+
+### **Order Controller** `/api/orders` *(Bearer Token Gerekli)*
+- `GET /api/orders` - Kullanıcı siparişleri
+- `POST /api/orders` - Sipariş oluşturma
+- `GET /api/orders/{id}` - Sipariş detay
+
+### **Chat Controller** `/api/chat` *(Bearer Token Gerekli)*
+- `GET /api/chat/history/{recipientId}` - Chat geçmişi
+- `POST /api/chat/send` - Mesaj gönderme (SignalR önerili)
+
+### **Image Controller** `/api/image`
+- `POST /api/image/upload` - Resim yükleme
+
+### **SignalR Chat Hub** `/chatHub`
+- **Connection**: JWT Token gerekli
+- **Events**: 
+  - `SendMessage` - Mesaj gönder
+  - `ReceiveMessage` - Mesaj al
+  - `JoinGroup` - Gruba katıl
+  - `LeaveGroup` - Gruptan ayrıl
 
 ## ⚡ Performans Özellikleri
 
@@ -53,24 +130,42 @@ src/
 │   │   ├── AuthModal/       # Giriş/Kayıt modal bileşeni
 │   │   ├── Footer/          # Alt bilgi bileşeni (SSR)
 │   │   ├── Navbar/          # Navigasyon çubuğu (Client)
+│   │   ├── AuthGuard.tsx    # Kimlik doğrulama koruması
 │   │   └── ClientComponents.tsx # Lazy loaded components
-│   ├── stores/              # Zustand state stores
-│   │   └── cartStore.ts     # Sepet state management
-│   ├── HomePage/            # Ana sayfa bileşenleri
-│   │   ├── promotion.tsx    # Promosyon slider'ı (Client)
+│   ├── features/            # Feature-based organizasyon
+│   │   └── auth/           # Authentication özelliği
+│   │       ├── api.ts      # Auth API işlemleri
+│   │       ├── authStore.ts # Auth state management
+│   │       └── logout.ts   # Logout fonksiyonları
+│   ├── lib/                # Utility kütüphaneleri
+│   │   ├── apiClient.ts    # Axios client yapılandırması
+│   │   ├── apiServices.ts  # Tüm backend API servisleri
+│   │   ├── constants.ts    # API endpoints ve sabitler
+│   │   └── signalRConnection.ts # SignalR chat servisi
+│   ├── hooks/              # Custom React hooks
+│   │   └── useSignalR.ts   # SignalR hook
+│   ├── stores/             # Zustand state stores
+│   │   ├── cartStore.ts    # Sepet state management
+│   │   └── likeStore.ts    # Favoriler state management
+│   ├── HomePage/           # Ana sayfa bileşenleri
+│   │   ├── promotion.tsx   # Promosyon slider'ı (Client)
 │   │   ├── newCollection.tsx # Yeni koleksiyon (SSR)
 │   │   ├── recycleAndEarn.tsx # Geri dönüşüm (SSR)
-│   │   └── page.tsx         # HomePage container (SSR)
-│   ├── products/            # Ürün sayfaları
-│   │   ├── [id]/           # Dinamik ürün detay
-│   │   ├── loading.tsx     # Products loading UI
-│   │   └── page.tsx        # Ürün listeleme
-│   ├── cart/               # Sepet sayfası
-│   ├── checkout/           # Ödeme sayfası
-│   ├── layout.tsx          # Ana layout (SSR + SEO)
-│   ├── page.tsx           # Ana sayfa entry point
-│   ├── loading.tsx        # Global loading UI
-│   └── globals.css        # Critical CSS + Tailwind
+│   │   └── page.tsx        # HomePage container (SSR)
+│   ├── products/           # Ürün sayfaları
+│   │   ├── [id]/          # Dinamik ürün detay
+│   │   ├── loading.tsx    # Products loading UI
+│   │   └── page.tsx       # Ürün listeleme
+│   ├── cart/              # Sepet sayfası
+│   ├── checkout/          # Ödeme sayfası
+│   ├── account/           # Kullanıcı hesap sayfası
+│   ├── favorites/         # Favoriler sayfası
+│   ├── login/             # Giriş sayfası
+│   ├── register/          # Kayıt sayfası
+│   ├── layout.tsx         # Ana layout (SSR + SEO)
+│   ├── page.tsx          # Ana sayfa entry point
+│   ├── loading.tsx       # Global loading UI
+│   └── globals.css       # Critical CSS + Tailwind
 ```
 
 ## 🧩 Bileşenler (Components)
@@ -530,5 +625,33 @@ npx lhci autorun
 - **FID:** < 50ms
 - **Mobile Performance:** 95+
 
+## 🧪 Geliştirme ve Test
 
+### **Geliştirme Sunucusu**
+```bash
+npm run dev  # Port 3000'de başlat (Turbopack ile)
+```
 
+### **Backend Test Bilgileri**
+- **Test Kullanıcı**: umutcanguncu@icloud.com / Umut135,
+- **Swagger**: https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net/swagger/index.html
+- **SignalR Test**: `/signalr-test` sayfasından test edebilirsiniz
+
+### **API Test Endpoints**
+```bash
+# Login test
+curl -X POST https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"umutcanguncu@icloud.com","password":"Umut135,"}'
+
+# Profile test (token gerekli)
+curl -X GET https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net/api/user/profile \
+  -H "Authorization: Bearer {your-token}"
+```
+
+### **Önemli Notlar**
+- ⚠️ **Authorization Header**: Tüm korumalı endpoint'ler için gerekli
+- ⚠️ **Backend URL**: `/api/addres` endpoint'inde typo var (address yerine addres)
+- ✅ **SignalR**: JWT token ile otomatik bağlantı
+- ✅ **State Management**: Zustand ile performanslı state
+- ✅ **Type Safety**: TypeScript ile tam tip güvenliği

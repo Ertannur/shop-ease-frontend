@@ -31,24 +31,16 @@ export const useSignalR = () => {
   const getCurrentUserInfo = useCallback(() => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('token');
-      console.log('Getting user info - token available:', !!token);
-      
       if (token) {
         try {
           // Decode JWT token to get user ID
           const payload = JSON.parse(atob(token.split('.')[1]));
-          console.log('JWT payload:', payload);
-          
           const userId = payload.sub || payload.userId;
-          console.log('Extracted user ID:', userId);
-          
           return userId;
         } catch (error) {
           console.error('Error decoding token:', error);
           return null;
         }
-      } else {
-        console.log('No token found in localStorage');
       }
     }
     return null;
@@ -150,7 +142,7 @@ export const useSignalR = () => {
           userId: currentUserId,
           toUserId: state.currentChatUser.id,
           message,
-          date: new Date().toISOString() // Fixed: use 'date' instead of 'createdDate'
+          createdDate: new Date().toISOString()
         };
         
         setState(prev => ({

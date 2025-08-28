@@ -37,20 +37,19 @@ export interface ResetPasswordRequest {
 }
 
 export interface ChangePasswordRequest {
-  id: string;
   oldPassword: string;
   newPassword: string;
 }
 
 export interface UpdateUserRequest {
   id: string;
-  firstName?: string;
-  lastName?: string;
-  gender?: 0 | 1;
-  dateOfBirth?: string;
-  email?: string;
-  phoneNumber?: string;
-  password?: string;
+  firstName: string;
+  lastName: string;
+  gender: 0 | 1;
+  dateOfBirth: string;
+  email: string;
+  phoneNumber: string;
+  password: string; // Required: current password for verification
 }
 
 export interface ApiResponse {

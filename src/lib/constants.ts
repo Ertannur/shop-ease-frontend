@@ -1,11 +1,12 @@
 // src/lib/constants.ts
 export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net"; // Backend domain URL
 export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net"; // Azure backend URL
+export const SIGNALR_HUB_URL = `${BASE_URL}/chatHub`; // SignalR hub URL
 
 export const AUTH_ENDPOINTS = {
   login: "/api/Auth/Login",
   register: "/api/Auth/Register",
-  refresh: "/api/Auth/RefreshTokenLogin", // Updated endpoint name
+  refresh: "/api/Auth/RefreshTokenLogin",
   roles: "/api/Auth/Roles",
   forgotPassword: "/api/Auth/ForgotPassword",
   resetPassword: "/api/Auth/ResetPassword",
@@ -13,15 +14,16 @@ export const AUTH_ENDPOINTS = {
 
 export const USER_ENDPOINTS = {
   updateUser: "/api/User/UpdateUser",
-  getUserById: "/api/User/GetUserById", // Updated endpoint name
+  getUserById: "/api/User/GetUserById",
   changePassword: "/api/User/ChangePassword",
+  getCurrentUser: "/api/User/GetCurrentUser", // Added missing endpoint
 } as const;
 
 export const PRODUCT_ENDPOINTS = {
   getProducts: "/api/Product/GetProducts",
-  getProductById: "/api/Product/GetProductById", // Updated endpoint name
+  getProductById: "/api/Product/GetProductById",
   addProduct: "/api/Product/AddProduct",
-  getFavoriteProducts: "/api/Product/GetFavoriteProducts", // New endpoint
+  getFavoriteProducts: "/api/Product/GetFavoriteProducts",
   addFavoriteProduct: "/api/Product/AddFavoriteProduct",
   deleteFavoriteProduct: "/api/Product/DeleteFavoriteProduct",
 } as const;
@@ -40,19 +42,27 @@ export const ORDER_ENDPOINTS = {
 } as const;
 
 export const ADDRESS_ENDPOINTS = {
-  addAddress: "/api/Adress/AddAdress",
+  addAddress: "/api/Adress/AddAdress", // Note: Backend has typo in "Adress" 
   getUserAddress: "/api/Adress/GetUserAdress",
+  updateAddress: "/api/Adress/UpdateAdress", // Added missing endpoint
 } as const;
 
 export const BASKET_ENDPOINTS = {
   getBasketItems: "/api/Basket/GetBasketItems",
-  addItemToBasket: "/api/Basket/AddItemToBasket", // Fixed typo: was AddItemTomBasket
+  addItemToBasket: "/api/Basket/AddItemToBasket",
   updateQuantity: "/api/Basket/UpdateQuantity",
   deleteBasketItem: "/api/Basket/DeleteBasketItem",
 } as const;
 
+export const CHAT_ENDPOINTS = {
+  getChats: "/api/Chat/GetChats",
+  getUsers: "/api/Chat/GetUsers", // Admin/Support only
+  getSupport: "/api/Chat/GetSupport", // User/Admin only  
+  sendMessage: "/api/Chat/SendMessage",
+} as const;
+
 export const IMAGE_ENDPOINTS = {
-  uploadImage: "/api/Image/UploadImage", // New endpoint
+  uploadImage: "/api/Image/UploadImage",
 } as const;
 
 export const ACCESS_TOKEN_KEY = "access_token";

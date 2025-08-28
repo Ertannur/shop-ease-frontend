@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import LiveChat from './LiveChat';
 
-export const SupportButton: React.FC = () => {
+const SupportButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -36,3 +36,5 @@ export const SupportButton: React.FC = () => {
     </>
   );
 };
+
+export default SupportButton;
