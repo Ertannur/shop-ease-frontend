@@ -1,16 +1,19 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useCartStore, useLikeStore } from "@/stores";
 import { formatTL } from "@/lib";
 import AuthToast from "@/components/Toast/AuthToast";
 import SuccessToast from "@/components/Toast/SuccessToast";
+import { ApiProductDetail } from "@/Types";
 
 interface ProductDetailClientProps {
   id: string;
+  product: ApiProductDetail;
 }
 
-const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
+const ProductDetailClient = ({ id, product }: ProductDetailClientProps) => {
   const [selectedSize, setSelectedSize] = useState("26/32");
   const [selectedColor, setSelectedColor] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -32,30 +35,26 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
   const addToLikes = useLikeStore((state) => state.addToLikes);
   const isItemLiked = useLikeStore((state) => state.isItemLiked);
 
-  // Mock product data - gerçek uygulamada API'den gelecek
-  const product = {
-    id: id,
-    name: "Loose Straight Jean",
-    price: 1000,
-    colors: [
-      { name: "Lacivert", value: "#1e3a8a" },
-      { name: "Açık Mavi", value: "#3b82f6" },
-    ],
-    sizes: ["26/32", "27/32", "28/32", "29/32", "30/32"],
-    images: [
-      "/placeholder-product.jpg",
-      "/placeholder-product.jpg",
-      "/placeholder-product.jpg",
-    ],
-    description:
-      "Denim koleksiyonundan Jane Classic Denim Pustu Açık Mavi Jean Pantolon. Normal bel, Düz kesim, düz paça Classic Denim. üstün kalitesi, gerçek indigo renkleri özel aksesuar detayları, bügünün en öne çıkan fikrini ve klasiği yeniden yorumlayan zamansız görünüşüne sahip",
-    features: {
-      fabric: "%100 Pamuk",
-      measurements: "Jean: Bel: 26/ Boy: 32. Üst: S",
-      size: "Boy: 179 cm / Bel: 59 cm / Göğüs: 84 cm / Kalça: 90 cm",
-    },
-    productCode: "1567865656536-856",
+  // Fallback product data when API returns null values
+  const productData = {
+    productId: product.productId || id,
+    title: product.title || "Ürün Başlığı",
+    description: product.description || "Bu ürün için henüz açıklama eklenmemiş.",
+    price: product.price || 0,
+    stock: product.stock || 0,
+    images: product.images && product.images.length > 0 ? product.images : ["/placeholder-product.jpg"],
+    details: product.details || "Ürün detayları henüz eklenmemiş."
   };
+
+  // Use product data from API instead of mock configuration
+  const colors = product.colors || [
+    { name: "Lacivert", value: "#1e3a8a" },
+    { name: "Açık Mavi", value: "#3b82f6" },
+  ];
+  
+  const sizes = product.sizes || ["26/32", "27/32", "28/32", "29/32", "30/32"];
+  
+  const productCode = product.productCode || product.productId;
 
   const handleAddToCart = async () => {
     if (!selectedSize) {
@@ -69,17 +68,17 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
     try {
       await addToCart({
         id: id,
-        name: product.name,
-        price: product.price,
-        image: product.images[0],
-        selectedColor: product.colors[selectedColor].name,
+        name: productData.title,
+        price: productData.price,
+        image: productData.images[0],
+        selectedColor: colors[selectedColor].name,
         selectedSize,
         quantity,
       });
 
       setSuccessToast({
         show: true,
-        message: `${product.name} sepete eklendi!`
+        message: `${productData.title} sepete eklendi!`
       });
     } catch (error) {
       console.error('Add to cart failed:', error);
@@ -101,10 +100,10 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
 
     const itemToLike = {
       id: id,
-      name: product.name,
-      price: product.price,
-      image: product.images[0],
-      selectedColor: product.colors[selectedColor].name,
+      name: productData.title,
+      price: productData.price,
+      image: productData.images[0],
+      selectedColor: colors[selectedColor].name,
       selectedSize,
     };
 
@@ -132,7 +131,7 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
       if (localStorage.getItem('token')) {
         setSuccessToast({
           show: true,
-          message: `${product.name} beğenilere eklendi!`
+          message: `${productData.title} beğenilere eklendi!`
         });
       }
     } catch (error) {
@@ -144,13 +143,13 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
     }
   };
 
-  const isLiked = isItemLiked(id, product.colors[selectedColor].name, selectedSize);
+  const isLiked = isItemLiked(id, colors[selectedColor].name, selectedSize);
 
   const breadcrumbs = [
     { name: "Anasayfa", href: "/" },
     { name: "Kadın", href: "/products?category=kadin" },
     { name: "Jean", href: "/products?category=jean" },
-    { name: product.name, href: "#" },
+    { name: productData.title, href: "#" },
   ];
 
   return (
@@ -182,17 +181,23 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
           {/* Ana Görsel */}
           <div className="mb-4">
             <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden">
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300">
-                <span className="text-gray-500 text-xl">
-                  Product Image {activeImage + 1}
-                </span>
-              </div>
+              <Image 
+                src={productData.images[activeImage]}
+                alt={productData.title}
+                width={500}
+                height={600}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='600' viewBox='0 0 500 600'%3E%3Crect width='500' height='600' fill='%23cccccc'/%3E%3Ctext x='250' y='300' text-anchor='middle' fill='%23666666' font-family='Arial' font-size='20'%3EÜrün Resmi%3C/text%3E%3C/svg%3E";
+                }}
+              />
             </div>
           </div>
 
           {/* Küçük Görseller */}
           <div className="flex space-x-2">
-            {product.images.map((_, index) => (
+            {productData.images.map((image, index) => (
               <button
                 key={index}
                 onClick={() => setActiveImage(index)}
@@ -200,9 +205,17 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
                   activeImage === index ? "border-black" : "border-transparent"
                 }`}
               >
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300">
-                  <span className="text-xs text-gray-500">{index + 1}</span>
-                </div>
+                <Image 
+                  src={image}
+                  alt={`${productData.title} - ${index + 1}`}
+                  width={80}
+                  height={96}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='96' viewBox='0 0 80 96'%3E%3Crect width='80' height='96' fill='%23cccccc'/%3E%3Ctext x='40' y='48' text-anchor='middle' fill='%23666666' font-family='Arial' font-size='10'%3E${index + 1}%3C/text%3E%3C/svg%3E";
+                  }}
+                />
               </button>
             ))}
           </div>
@@ -211,7 +224,7 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
         {/* Sağ: Ürün Bilgileri */}
         <div>
           <div className="flex justify-between items-start mb-4">
-            <h1 className="text-3xl font-normal">{product.name}</h1>
+            <h1 className="text-3xl font-normal">{product.title || "Ürün"}</h1>
             <button 
               onClick={handleLike}
               className={`w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors ${
@@ -234,12 +247,12 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
             </button>
           </div>
 
-          <p className="text-2xl font-semibold mb-6">{formatTL(product.price)}</p>
+          <p className="text-2xl font-semibold mb-6">{formatTL(product.price || 0)}</p>
 
           {/* Renk Seçimi */}
           <div className="mb-6">
             <div className="flex items-center space-x-4 mb-2">
-              {product.colors.map((color, index) => (
+              {colors.map((color, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedColor(index)}
@@ -261,7 +274,7 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-black"
             >
               <option value="">Beden seçiniz</option>
-              {product.sizes.map((size) => (
+              {sizes.map((size) => (
                 <option key={size} value={size}>
                   {size}
                 </option>
@@ -317,28 +330,50 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
           <div className="border-t pt-6">
             <h3 className="text-lg font-semibold mb-4">Ürün Özellikleri</h3>
             <p className="text-gray-700 text-sm leading-relaxed mb-6">
-              {product.description}
+              {product.description || 'Açıklama bulunmuyor.'}
             </p>
 
             <div className="space-y-4">
+              {product.details && typeof product.details === 'string' && (
+                <div>
+                  <h4 className="font-medium mb-2">Detaylar</h4>
+                  <p className="text-sm text-gray-600">
+                    {product.details}
+                  </p>
+                </div>
+              )}
+
               <div>
-                <h4 className="font-medium mb-2">Kumaş Bilgileri</h4>
+                <h4 className="font-medium mb-2">Stok Durumu</h4>
                 <p className="text-sm text-gray-600">
-                  {product.features.fabric}
+                  {product.stock > 0 ? `${product.stock} adet stokta` : 'Stokta yok'}
                 </p>
               </div>
 
-              <div>
-                <h4 className="font-medium mb-2">Manken Ölçüleri</h4>
-                <p className="text-sm text-gray-600">
-                  {product.features.measurements}
-                </p>
-                <p className="text-sm text-gray-600">{product.features.size}</p>
-              </div>
+              {product.fabric && (
+                <div>
+                  <h4 className="font-medium mb-2">Kumaş Bilgileri</h4>
+                  <p className="text-sm text-gray-600">
+                    {product.fabric}
+                  </p>
+                </div>
+              )}
+
+              {product.measurements && (
+                <div>
+                  <h4 className="font-medium mb-2">Manken Ölçüleri</h4>
+                  <p className="text-sm text-gray-600">
+                    {product.measurements}
+                  </p>
+                  {product.size && (
+                    <p className="text-sm text-gray-600">{product.size}</p>
+                  )}
+                </div>
+              )}
 
               <div>
                 <h4 className="font-medium mb-2">Ürün Kodu</h4>
-                <p className="text-sm text-gray-600">{product.productCode}</p>
+                <p className="text-sm text-gray-600">{productCode}</p>
               </div>
             </div>
           </div>

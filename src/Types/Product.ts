@@ -5,6 +5,22 @@ export interface ApiProduct {
   imageUrl: string;
 }
 
+export interface ApiProductDetail {
+  productId: string | null;
+  title: string | null;
+  description: string | null;
+  price: number;
+  stock: number;
+  images: string[] | null;
+  details: string | null;
+  colors?: Array<{ name: string; value: string }>;
+  sizes?: string[];
+  fabric?: string;
+  measurements?: string;
+  size?: string;
+  productCode?: string;
+}
+
 export interface ProductsResponse {
   products: ApiProduct[];
   totalPage: number;
