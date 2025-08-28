@@ -14,7 +14,7 @@ export type RegisterDto = RegisterRequest;
 
 export const loginAPI = async (email: string, password: string): Promise<AuthResponse> => {
   try {
-    const response = await api.post<AuthResponse>('/Auth/Login', {
+    const response = await api.post<AuthResponse>(AUTH_ENDPOINTS.login, {
       email,
       password
     });
