@@ -13,6 +13,8 @@ export const api = axios.create({
 // Request interceptor - token'ı otomatik ekle
 api.interceptors.request.use(
   (config) => {
+    console.log(`API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+    
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (token) {
       config.headers = config.headers ?? {};
