@@ -8,6 +8,11 @@ type User = {
   name?: string;
   firstName?: string;
   lastName?: string;
+  phoneNumber?: string;
+  dateOfBirth?: string;
+  gender?: 0 | 1; // Backend uses 0/1 for Male/Female
+  emailConfirmed?: boolean;
+  createdDate?: string;
   roles?: string[];
 };
 

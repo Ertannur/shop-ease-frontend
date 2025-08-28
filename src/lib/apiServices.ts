@@ -56,6 +56,8 @@ export interface UserResponse {
   phoneNumber?: string;
   gender?: 0 | 1;
   dateOfBirth?: string;
+  emailConfirmed?: boolean;
+  createdDate?: string;
   roles?: string[];
 }
 

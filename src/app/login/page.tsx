@@ -6,6 +6,8 @@ import { loginAPI } from "@/features/auth/api";
 import { useAuthStore } from "@/features/auth";
 import { useCartStore } from "@/stores/cartStore";
 import { useLikeStore } from "@/stores/likeStore";
+import { userService } from "@/lib/apiServices";
+import { extractUserFromToken } from "@/lib/jwt";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,19 +35,28 @@ export default function LoginPage() {
         // Token'ı localStorage'a kaydet
         localStorage.setItem('token', result.token.accessToken);
         
-        // User bilgilerini auth store'a kaydet
-        const userInfo = {
-          id: result.userId || '',
-          email: form.email,
-          firstName: result.user?.firstName,
-          lastName: result.user?.lastName,
-          roles: result.user?.roles || []
-        };
-        
-        setSession(userInfo, result.token.accessToken);
-        
-        // Kullanıcının backend'teki verilerini yükle
         try {
+          // Backend'den tam kullanıcı profilini al
+          const userProfileResponse = await userService.getCurrentUser();
+          console.log('User profile response:', userProfileResponse);
+          
+          // User bilgilerini auth store'a kaydet
+          const userInfo = {
+            id: result.userId || userProfileResponse.data?.id || '',
+            email: userProfileResponse.data?.email || form.email,
+            firstName: userProfileResponse.data?.firstName || '',
+            lastName: userProfileResponse.data?.lastName || '',
+            phoneNumber: userProfileResponse.data?.phoneNumber || '',
+            dateOfBirth: userProfileResponse.data?.dateOfBirth || '',
+            gender: userProfileResponse.data?.gender,
+            emailConfirmed: userProfileResponse.data?.emailConfirmed,
+            createdDate: userProfileResponse.data?.createdDate,
+            roles: userProfileResponse.data?.roles || []
+          };
+          
+          setSession(userInfo, result.token.accessToken);
+          
+          // Kullanıcının backend'teki verilerini yükle
           await Promise.all([
             loadUserCart(),
             loadUserFavorites()
