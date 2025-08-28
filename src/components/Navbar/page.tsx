@@ -56,7 +56,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center">
           <div className="flex gap-4">
             <Link
-              href="/products?category=kadin"
+              href="/products?category=kadın"
               className="hover:text-gray-600 transition-colors"
             >
               Kadın
@@ -68,19 +68,19 @@ const Navbar = () => {
               Erkek
             </Link>
             <Link
-              href="/products?category=cocuk"
+              href="/products?category=çocuk"
               className="hover:text-gray-600 transition-colors"
             >
               Çocuk
             </Link>
             <Link
-              href="/products?category=outlet"
+              href="/products?category=montlar"
               className="hover:text-gray-600 transition-colors"
             >
               Outlet
             </Link>
             <Link
-              href="/products?category=recycle"
+              href="/products?category=jean"
               className="hover:text-gray-600 transition-colors"
             >
               Geri Dönüştür

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 
 const DiscountSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -78,9 +79,11 @@ const DiscountSection = () => {
               <p className="text-[40px]">{slide.subtitle}</p>
               <h2 className="text-[80px] font-bold mb-2">{slide.title}</h2>
               <div className="mt-20">
-                <button className="bg-white text-black px-10 py-2 rounded-[12px]">
-                  Alışverişe Başla
-                </button>
+                <Link href="/products">
+                  <button className="bg-white text-black px-10 py-2 rounded-[12px] hover:bg-gray-100 transition-colors">
+                    Alışverişe Başla
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
