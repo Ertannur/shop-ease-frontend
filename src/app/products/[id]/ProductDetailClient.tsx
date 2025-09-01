@@ -1,10 +1,13 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCartStore, useLikeStore } from "@/stores";
 import { formatTL } from "@/lib";
 import AuthToast from "@/components/Toast/AuthToast";
 import SuccessToast from "@/components/Toast/SuccessToast";
+import { ApiProduct } from "@/Types";
+import { getProductByIdAPI } from "@/services/productsApi";
+import Image from "next/image";
 
 interface ProductDetailClientProps {
   id: string;
@@ -15,96 +18,126 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
   const [selectedColor, setSelectedColor] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
-  
+  const [product, setProduct] = useState<ApiProduct | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   // Toast states
   const [successToast, setSuccessToast] = useState<{
     show: boolean;
     message: string;
-  }>({ show: false, message: '' });
-  
+  }>({ show: false, message: "" });
+
   const [authToast, setAuthToast] = useState<{
     show: boolean;
     message: string;
     position?: { x: number; y: number };
-  }>({ show: false, message: '' });
+  }>({ show: false, message: "" });
 
   const addToCart = useCartStore((state) => state.addToCart);
   const addToLikes = useLikeStore((state) => state.addToLikes);
   const isItemLiked = useLikeStore((state) => state.isItemLiked);
 
-  // Mock product data - gerçek uygulamada API'den gelecek
-  const product = {
-    id: id,
-    name: "Loose Straight Jean",
-    price: 1000,
-    colors: [
-      { name: "Lacivert", value: "#1e3a8a" },
-      { name: "Açık Mavi", value: "#3b82f6" },
-    ],
-    sizes: ["26/32", "27/32", "28/32", "29/32", "30/32"],
-    images: [
-      "/placeholder-product.jpg",
-      "/placeholder-product.jpg",
-      "/placeholder-product.jpg",
-    ],
-    description:
-      "Denim koleksiyonundan Jane Classic Denim Pustu Açık Mavi Jean Pantolon. Normal bel, Düz kesim, düz paça Classic Denim. üstün kalitesi, gerçek indigo renkleri özel aksesuar detayları, bügünün en öne çıkan fikrini ve klasiği yeniden yorumlayan zamansız görünüşüne sahip",
-    features: {
-      fabric: "%100 Pamuk",
-      measurements: "Jean: Bel: 26/ Boy: 32. Üst: S",
-      size: "Boy: 179 cm / Bel: 59 cm / Göğüs: 84 cm / Kalça: 90 cm",
-    },
-    productCode: "1567865656536-856",
-  };
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        console.log("API çağrısı yapılıyor, ID:", id);
+        const productData = await getProductByIdAPI(id);
+        console.log("API'den gelen raw response:", productData);
+        setProduct(productData);
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        setError("Ürün bilgileri yüklenirken bir hata oluştu!");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id]);
+  
+  if (isLoading) {
+    return (
+      <div className="container py-8 min-h-[60vh] flex flex-col items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700">
+            Ürün yükleniyor...
+          </h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="container py-8 min-h-[60vh] flex flex-col items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+            Ürün bulunamadı
+          </h2>
+          <p className="text-gray-500 mb-6">
+            {error || "Ürün bilgileri yüklenemedi"}
+          </p>
+          <Link
+            href="/products"
+            className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors"
+          >
+            Ürünlere Dön
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const handleAddToCart = async () => {
-    if (!selectedSize) {
+    if (!selectedSize || !product) {
       setSuccessToast({
         show: true,
-        message: "Lütfen beden seçiniz!"
+        message: "Lütfen beden seçiniz!",
       });
       return;
     }
 
     try {
       await addToCart({
-        id: id,
-        name: product.name,
+        id: product.productId,
+        name: product.title,
         price: product.price,
         image: product.images[0],
-        selectedColor: product.colors[selectedColor].name,
+        selectedColor: "Varsayılan",
         selectedSize,
         quantity,
       });
 
       setSuccessToast({
         show: true,
-        message: `${product.name} sepete eklendi!`
+        message: `${product.title} sepete eklendi!`,
       });
     } catch (error) {
-      console.error('Add to cart failed:', error);
+      console.error("Add to cart failed:", error);
       setSuccessToast({
         show: true,
-        message: 'Ürün sepete eklenirken bir hata oluştu!'
+        message: "Ürün sepete eklenirken bir hata oluştu!",
       });
     }
   };
 
   const handleLike = async (event?: React.MouseEvent<HTMLButtonElement>) => {
-    if (!selectedSize) {
+    if (!selectedSize || !product) {
       setSuccessToast({
         show: true,
-        message: "Lütfen beden seçiniz!"
+        message: "Lütfen beden seçiniz!",
       });
       return;
     }
 
     const itemToLike = {
-      id: id,
-      name: product.name,
+      id: product.productId,
+      name: product.title,
       price: product.price,
       image: product.images[0],
-      selectedColor: product.colors[selectedColor].name,
+      selectedColor: "Varsayılan",
       selectedSize,
     };
 
@@ -112,45 +145,45 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
       await addToLikes(itemToLike, () => {
         // Auth required callback
         let position = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-        
+
         if (event) {
           const rect = event.currentTarget.getBoundingClientRect();
           position = {
             x: rect.left + rect.width / 2,
-            y: rect.top
+            y: rect.top,
           };
         }
-        
+
         setAuthToast({
           show: true,
-          message: 'Bu ürünü beğenmek için giriş yapmanız gerekiyor.',
-          position
+          message: "Bu ürünü beğenmek için giriş yapmanız gerekiyor.",
+          position,
         });
       });
 
       // Eğer buraya geldiysek, authentication başarılı
-      if (localStorage.getItem('token')) {
+      if (localStorage.getItem("token")) {
         setSuccessToast({
           show: true,
-          message: `${product.name} beğenilere eklendi!`
+          message: `${product.title} beğenilere eklendi!`,
         });
       }
     } catch (error) {
-      console.error('Add to likes failed:', error);
+      console.error("Add to likes failed:", error);
       setSuccessToast({
         show: true,
-        message: 'Ürün beğenilere eklenirken bir hata oluştu!'
+        message: "Ürün beğenilere eklenirken bir hata oluştu!",
       });
     }
   };
 
-  const isLiked = isItemLiked(id, product.colors[selectedColor].name, selectedSize);
+  const isLiked = isItemLiked(product.productId, "Varsayılan", selectedSize);
 
   const breadcrumbs = [
     { name: "Anasayfa", href: "/" },
     { name: "Kadın", href: "/products?category=kadin" },
     { name: "Jean", href: "/products?category=jean" },
-    { name: product.name, href: "#" },
+    { name: product.title, href: "#" },
   ];
 
   return (
@@ -181,41 +214,43 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
         <div>
           {/* Ana Görsel */}
           <div className="mb-4">
-            <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden">
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300">
-                <span className="text-gray-500 text-xl">
-                  Product Image {activeImage + 1}
-                </span>
-              </div>
+            <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden relative">
+              <Image
+                src={product.images[0] || "/images/placeholder-product.png"}
+                alt={product.title}
+                fill
+                className="object-cover"
+              />
             </div>
           </div>
 
           {/* Küçük Görseller */}
           <div className="flex space-x-2">
-            {product.images.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setActiveImage(index)}
-                className={`w-20 h-24 bg-gray-200 rounded-lg overflow-hidden border-2 ${
-                  activeImage === index ? "border-black" : "border-transparent"
-                }`}
-              >
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300">
-                  <span className="text-xs text-gray-500">{index + 1}</span>
-                </div>
-              </button>
-            ))}
+            {/* Tek görsel olduğu için sadece bir tane göster */}
+            <button
+              onClick={() => setActiveImage(0)}
+              className={`w-20 h-24 bg-gray-200 rounded-lg overflow-hidden border-2 relative ${
+                activeImage === 0 ? "border-black" : "border-transparent"
+              }`}
+            >
+              <Image
+                src={product.images[0] || "/images/placeholder-product.png"}
+                alt={product.title}
+                fill
+                className="object-cover"
+              />
+            </button>
           </div>
         </div>
 
         {/* Sağ: Ürün Bilgileri */}
         <div>
           <div className="flex justify-between items-start mb-4">
-            <h1 className="text-3xl font-normal">{product.name}</h1>
-            <button 
+            <h1 className="text-3xl font-normal">{product.title}</h1>
+            <button
               onClick={handleLike}
               className={`w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors ${
-                isLiked ? 'text-red-500' : 'text-gray-600'
+                isLiked ? "text-red-500" : "text-gray-600"
               }`}
             >
               <svg
@@ -234,19 +269,21 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
             </button>
           </div>
 
-          <p className="text-2xl font-semibold mb-6">{formatTL(product.price)}</p>
+          <p className="text-2xl font-semibold mb-6">
+            {formatTL(product.price)}
+          </p>
 
           {/* Renk Seçimi */}
           <div className="mb-6">
             <div className="flex items-center space-x-4 mb-2">
-              {product.colors.map((color, index) => (
+              {product.details?.map((detail, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedColor(index)}
                   className={`w-8 h-8 rounded-full border-2 ${
                     selectedColor === index ? "border-black" : "border-gray-300"
                   }`}
-                  style={{ backgroundColor: color.value }}
+                  style={{ backgroundColor: detail.color }}
                 />
               ))}
             </div>
@@ -261,9 +298,9 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-black"
             >
               <option value="">Beden seçiniz</option>
-              {product.sizes.map((size) => (
-                <option key={size} value={size}>
-                  {size}
+              {product.details?.map((detail) => (
+                <option key={detail.size} value={detail.size}>
+                  {detail.size}
                 </option>
               ))}
             </select>
@@ -299,18 +336,18 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
           >
             Sepete Ekle ({quantity} adet)
           </button>
-          
+
           {/* Beğen Butonu */}
-          <button 
+          <button
             onClick={handleLike}
             disabled={!selectedSize}
             className={`w-full py-4 rounded-md transition-colors duration-300 text-lg font-medium mb-8 disabled:bg-gray-400 disabled:cursor-not-allowed ${
-              isLiked 
-                ? 'bg-red-500 text-white hover:bg-red-600' 
-                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+              isLiked
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
             }`}
           >
-            {isLiked ? 'Beğenildi' : 'Beğen'}
+            {isLiked ? "Beğenildi" : "Beğen"}
           </button>
 
           {/* Ürün Özellikleri */}
@@ -323,40 +360,44 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
             <div className="space-y-4">
               <div>
                 <h4 className="font-medium mb-2">Kumaş Bilgileri</h4>
-                <p className="text-sm text-gray-600">
-                  {product.features.fabric}
-                </p>
+                <p className="text-sm text-gray-600">%100 Pamuk</p>
               </div>
 
               <div>
                 <h4 className="font-medium mb-2">Manken Ölçüleri</h4>
                 <p className="text-sm text-gray-600">
-                  {product.features.measurements}
+                  Jean: Bel: {product.details?.[0].size} / Boy: {product.details?.[0].size}
                 </p>
-                <p className="text-sm text-gray-600">{product.features.size}</p>
+                <p className="text-sm text-gray-600">
+                  Boy: 179 cm / Bel: 59 cm / Göğüs: 84 cm / Kalça: 90 cm
+                </p>
               </div>
 
               <div>
                 <h4 className="font-medium mb-2">Ürün Kodu</h4>
-                <p className="text-sm text-gray-600">{product.productCode}</p>
+                <p className="text-sm text-gray-600">{product.details?.[0].productDetailId}</p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Stok</h4>
+                <p className="text-sm text-gray-600">{product.details?.[0].stock}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
+
       {/* Success Toast */}
       <SuccessToast
         show={successToast.show}
         message={successToast.message}
-        onClose={() => setSuccessToast({ show: false, message: '' })}
+        onClose={() => setSuccessToast({ show: false, message: "" })}
       />
 
       {/* Auth Toast */}
       <AuthToast
         show={authToast.show}
         message={authToast.message}
-        onClose={() => setAuthToast({ show: false, message: '' })}
+        onClose={() => setAuthToast({ show: false, message: "" })}
         position={authToast.position}
       />
     </div>

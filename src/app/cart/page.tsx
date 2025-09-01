@@ -88,7 +88,7 @@ const CartPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Sepet Ürünleri */}
         <div className="lg:col-span-2 space-y-4">
-          {cartItems.map((item) => (
+          {cartItems.map((item, index) => (
             <div
               key={`${item.id}-${item.selectedColor}-${item.selectedSize}`}
               className="bg-white border border-gray-200 rounded-lg p-6"
@@ -101,6 +101,7 @@ const CartPage = () => {
                     alt={item.name}
                     fill
                     className="object-cover"
+                    priority={index === 0}
                   />
                 </div>
 

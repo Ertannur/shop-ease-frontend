@@ -1,8 +1,19 @@
 export interface ApiProduct {
+  title: string;
+  description: string;
+  stock: number;
   productId: string;
   name: string;
   price: number;
-  imageUrl: string;
+  images: string[];
+  details?: ApiProductDetail[]
+}
+
+export interface ApiProductDetail {
+  color: string;
+  size: string;
+  stock: number;
+  productDetailId: string;
 }
 
 export interface ProductsResponse {

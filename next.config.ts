@@ -5,7 +5,7 @@ const isProd = process.env.NODE_ENV === 'production';
 
 const nextConfig: NextConfig = {
   // GitHub Pages için static export
-  output: 'export',
+ 
   trailingSlash: true,
   distDir: 'dist',
   
