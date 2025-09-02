@@ -75,12 +75,12 @@ const DiscountSection = () => {
             }}
           >
             <div className="absolute inset-0 bg-black/40"></div>
-            <div className="text-center relative z-10">
-              <p className="text-[40px]">{slide.subtitle}</p>
-              <h2 className="text-[80px] font-bold mb-2">{slide.title}</h2>
+            <div className="text-center relative z-10 px-4 md:px-0">
+              <p className="text-[20px] md:text-[30px] lg:text-[40px]">{slide.subtitle}</p>
+              <h2 className="text-[40px] md:text-[60px] lg:text-[80px] font-bold mb-2">{slide.title}</h2>
               <div className="mt-20">
                 <Link href="/products">
-                  <button className="bg-white text-black px-10 py-2 rounded-[12px] hover:bg-gray-100 transition-colors">
+                  <button className="w-full md:w-auto bg-white text-black px-6 md:px-10 py-2 rounded-[12px] hover:bg-gray-100 transition-colors">
                     Alışverişe Başla
                   </button>
                 </Link>
