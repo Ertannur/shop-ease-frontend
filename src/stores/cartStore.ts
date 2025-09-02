@@ -76,8 +76,7 @@ export const useCartStore = create<CartState>()(
       },
 
       addToCart: async (newItem) => {
-        console.log("yeni ürün:", newItem);
-        console.log("mevcut cart items:", get().items);
+        console.log("CartStore'a gelen veri:", newItem);
         try {
           // Eğer kullanıcı authenticated ise backend'e de ekle
           if (get().isAuthenticated()) {
@@ -96,13 +95,12 @@ export const useCartStore = create<CartState>()(
             });
 
             if (existingItem !== -1) {
-              console.log("var olan ürün var");
               // Sadece yeni item ekle, eski item'ı silme
               await addItemToBasketAPI(newItem.id, newItem.quantity || 1);
-              console.log("Aynı ürün için yeni item eklendi");
+              console.log("Backend API çağrısı başarılı");
             } else {
-              console.log("var olan ürün yok");
               await addItemToBasketAPI(newItem.id, newItem.quantity || 1);
+              console.log("Backend API çağrısı başarılı");
             }
           }
         } catch (error) {
@@ -136,6 +134,7 @@ export const useCartStore = create<CartState>()(
             };
           }
         });
+        console.log("Local state güncellendi, yeni items:", get().items);
       },
 
       removeFromCart: async (id, color, size) => {
@@ -234,7 +233,9 @@ export const useCartStore = create<CartState>()(
                 existingItem.quantity += item.quantity;
               } else {
                 // Yeni ürün ekle
-                console.log(`Yeni ürün eklendi: ${item.name}, quantity: ${item.quantity}`);
+                console.log(
+                  `Yeni ürün eklendi: ${item.name}, quantity: ${item.quantity}`
+                );
                 acc.push({
                   id: item.basketItemId,
                   name: item.name || "Ürün Adı Bulunamadı",

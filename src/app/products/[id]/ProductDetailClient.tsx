@@ -15,7 +15,7 @@ interface ProductDetailClientProps {
 
 const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
   const [selectedSize, setSelectedSize] = useState("26/32");
-  const [selectedColor, setSelectedColor] = useState(0);
+  const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [product, setProduct] = useState<ApiProduct | null>(null);
@@ -55,7 +55,7 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
     };
     fetchProduct();
   }, [id]);
-  
+
   if (isLoading) {
     return (
       <div className="container py-8 min-h-[60vh] flex flex-col items-center justify-center">
@@ -99,13 +99,28 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
       return;
     }
 
+    const availableStock = getSelectedStock();
+    if (quantity > availableStock) {
+      setSuccessToast({
+        show: true,
+        message: `Stokta ${availableStock} adet ürün var!`,
+      })
+      return;
+    }
+
+    console.log("Sepete eklenen veri:", {
+      selectedColor,
+      selectedSize,
+      quantity
+    });
+
     try {
       await addToCart({
         id: product.productId,
         name: product.title,
         price: product.price,
         image: product.images[0],
-        selectedColor: "Varsayılan",
+        selectedColor: selectedColor || "Varsayılan",
         selectedSize,
         quantity,
       });
@@ -137,7 +152,7 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
       name: product.title,
       price: product.price,
       image: product.images[0],
-      selectedColor: "Varsayılan",
+      selectedColor: selectedColor || "Varsayılan",
       selectedSize,
     };
 
@@ -177,7 +192,20 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
     }
   };
 
-  const isLiked = isItemLiked(product.productId, "Varsayılan", selectedSize);
+  const getSelectedStock = () => {
+    if (!selectedColor || !selectedSize || !product?.details) return 0;
+
+    const selectedDetail = product.details.find(
+      (detail) => detail.color === selectedColor && detail.size === selectedSize
+    );
+    return selectedDetail?.stock || 0;
+  };
+
+  const isLiked = isItemLiked(
+    product.productId,
+    selectedColor || "Varsayılan",
+    selectedSize
+  );
 
   const breadcrumbs = [
     { name: "Anasayfa", href: "/" },
@@ -279,9 +307,11 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
               {product.details?.map((detail, index) => (
                 <button
                   key={index}
-                  onClick={() => setSelectedColor(index)}
+                  onClick={() => setSelectedColor(detail.color)}
                   className={`w-8 h-8 rounded-full border-2 ${
-                    selectedColor === index ? "border-black" : "border-gray-300"
+                    selectedColor === detail.color
+                      ? "border-black"
+                      : "border-gray-300"
                   }`}
                   style={{ backgroundColor: detail.color }}
                 />
@@ -366,7 +396,8 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
               <div>
                 <h4 className="font-medium mb-2">Manken Ölçüleri</h4>
                 <p className="text-sm text-gray-600">
-                  Jean: Bel: {product.details?.[0].size} / Boy: {product.details?.[0].size}
+                  Jean: Bel: {product.details?.[0].size} / Boy:{" "}
+                  {product.details?.[0].size}
                 </p>
                 <p className="text-sm text-gray-600">
                   Boy: 179 cm / Bel: 59 cm / Göğüs: 84 cm / Kalça: 90 cm
@@ -375,11 +406,15 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
 
               <div>
                 <h4 className="font-medium mb-2">Ürün Kodu</h4>
-                <p className="text-sm text-gray-600">{product.details?.[0].productDetailId}</p>
+                <p className="text-sm text-gray-600">
+                  {product.details?.[0].productDetailId}
+                </p>
               </div>
               <div>
                 <h4 className="font-medium mb-2">Stok</h4>
-                <p className="text-sm text-gray-600">{product.details?.[0].stock}</p>
+                <p className="text-sm text-gray-600">
+                  {getSelectedStock()} adet
+                </p>
               </div>
             </div>
           </div>

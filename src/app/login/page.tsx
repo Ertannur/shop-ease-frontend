@@ -4,13 +4,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { loginAPI } from "@/features/auth/api";
 import { useAuthStore } from "@/features/auth";
-import { useCartStore } from "@/stores/cartStore";
+/* import { useCartStore } from "@/stores/cartStore"; */
 import { useLikeStore } from "@/stores/likeStore";
 
 export default function LoginPage() {
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
-  const loadUserCart = useCartStore((s) => s.loadUserCart);
+  /* const loadUserCart = useCartStore((s) => s.loadUserCart); */
   const loadUserFavorites = useLikeStore((s) => s.loadUserFavorites);
 
   const [form, setForm] = useState({ email: "", password: "" });
@@ -37,9 +37,9 @@ export default function LoginPage() {
         const userInfo = {
           id: result.userId || '',
           email: form.email,
-          firstName: result.user?.firstName,
+          /* firstName: result.user?.firstName,
           lastName: result.user?.lastName,
-          roles: result.user?.roles || []
+          roles: result.user?.roles || [] */
         };
         
         setSession(userInfo, result.token.accessToken);
@@ -47,7 +47,7 @@ export default function LoginPage() {
         // Kullanıcının backend'teki verilerini yükle
         try {
           await Promise.all([
-            loadUserCart(),
+            /* loadUserCart(), */
             loadUserFavorites()
           ]);
         } catch (error) {
