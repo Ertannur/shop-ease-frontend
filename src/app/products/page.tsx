@@ -12,6 +12,7 @@ import { ApiProduct, ProductsResponse } from "@/Types";
 const ProductsPage = () => {
   const searchParams = useSearchParams();
   const category = searchParams.get('category');
+  const search = searchParams.get('search');
   
   const [toast, setToast] = useState<{
     show: boolean;
@@ -48,11 +49,26 @@ const ProductsPage = () => {
           apiUrl += `&category=${category}`;
         }
         
+        // Arama parametresi varsa ekle
+        if (search) {
+          apiUrl += `&search=${encodeURIComponent(search)}`;
+        }
+        
         const response = await axios.get<ProductsResponse>(apiUrl);
         console.log('API Response:', response.data);
         console.log('Products:', response.data.products);
         console.log('API URL:', apiUrl);
-        setProducts(response.data.products);
+        
+        // Frontend'de arama filtresi uygula
+        let filteredProducts = response.data.products;
+        if (search) {
+          filteredProducts = response.data.products.filter(product => 
+            product.name.toLowerCase().includes(search.toLowerCase()) ||
+            product.description?.toLowerCase().includes(search.toLowerCase())
+          );
+        }
+        
+        setProducts(filteredProducts);
         setPagination({
           totalPage: response.data.totalPage,
           totalCount: response.data.totalCount,
@@ -68,7 +84,7 @@ const ProductsPage = () => {
     };
 
     fetchProducts();
-  }, [currentPage, category]);
+  }, [currentPage, category, search]);
 
   const loadMoreProducts = async () => {
     if (loadingMore || !pagination.hasNextPage) return;
@@ -83,12 +99,26 @@ const ProductsPage = () => {
         apiUrl += `&category=${category}`;
       }
       
+      // Arama parametresi varsa ekle
+      if (search) {
+        apiUrl += `&search=${encodeURIComponent(search)}`;
+      }
+      
       const response = await axios.get<ProductsResponse>(apiUrl);
       
       // Mevcut ürünlere yeni ürünleri ekle (duplicate kontrol ile)
       setProducts(prevProducts => {
         const existingIds = new Set(prevProducts.map(p => p.productId));
-        const newProducts = response.data.products.filter((p: ApiProduct) => !existingIds.has(p.productId));
+        let newProducts = response.data.products.filter((p: ApiProduct) => !existingIds.has(p.productId));
+        
+        // Arama filtresi uygula
+        if (search) {
+          newProducts = newProducts.filter(product => 
+            product.name.toLowerCase().includes(search.toLowerCase()) ||
+            product.description?.toLowerCase().includes(search.toLowerCase())
+          );
+        }
+        
         return [...prevProducts, ...newProducts];
       });
       setCurrentPage(nextPage);
@@ -131,7 +161,9 @@ const ProductsPage = () => {
       {/* Başlık */}
       <div className="mb-8">
         <h1 className="text-3xl font-normal">
-          {category ? `${category.charAt(0).toUpperCase() + category.slice(1)} Ürünleri` : 'Yeni Ürünler'}
+          {search ? `"${search}" için arama sonuçları` : 
+           category ? `${category.charAt(0).toUpperCase() + category.slice(1)} Ürünleri` : 
+           'Yeni Ürünler'}
         </h1>
       </div>
 
@@ -142,7 +174,7 @@ const ProductsPage = () => {
             {/* Ürün Görseli */}
             <div className="relative bg-gray-200 rounded-lg overflow-hidden mb-4 group-hover:shadow-lg transition-shadow duration-300">
               <Image 
-                src={product.imageUrl || "/placeholder-product.jpg"} 
+                src={product.imageUrl || "/placeholder-product.jpg"}
                 alt={product.name}
                 width={300}
                 height={400}

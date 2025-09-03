@@ -8,12 +8,16 @@ import AuthToast from "@/components/Toast/AuthToast";
 
 const Navbar = () => {
   const [isHydrated, setIsHydrated] = useState(false);
+  const [search, setSearch] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [toast, setToast] = useState<{
     show: boolean;
     message: string;
     position?: { x: number; y: number };
-  }>({ show: false, message: '' });
-  
+  }>({ show: false, message: "" });
+
   const totalItems = useCartStore((state) => state.getTotalItems());
   const totalLikes = useLikeStore((state) => state.getTotalItems());
   const isAuthenticated = useAuthStore((state) => state.isAuthed());
@@ -34,21 +38,78 @@ const Navbar = () => {
   const handleFavoritesClick = (e: React.MouseEvent) => {
     if (!isAuthenticated) {
       e.preventDefault();
-      
+
       // Mouse pozisyonunu al
       const rect = e.currentTarget.getBoundingClientRect();
       const position = {
         x: rect.left + rect.width / 2,
-        y: rect.top
+        y: rect.top,
       };
-      
+
       setToast({
         show: true,
-        message: 'Beğenilerinizi görmek için giriş yapmanız gerekiyor.',
-        position
+        message: "Beğenilerinizi görmek için giriş yapmanız gerekiyor.",
+        position,
       });
     }
   };
+
+  const handleSearch = () => {
+    if (search.trim()) {
+      window.location.href = `/products?search=${encodeURIComponent(
+        search.trim()
+      )}`;
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === `Enter`) {
+      handleSearch();
+    }
+  };
+
+  const fetchSuggestions = async (query: string) => {
+    if (query.length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setIsLoadingSuggestions(true);
+    try {
+      // Basit öneriler - gerçek API'den gelecek
+      const mockSuggestions = [
+        "Kadın Bluz",
+        "Erkek Gömlek",
+        "Çocuk Tişört",
+        "Kadın Pantolon",
+        "Erkek Jean",
+        "Kadın Elbise",
+        "Erkek Mont",
+        "Çocuk Ayakkabı",
+      ].filter((item) => item.toLowerCase().includes(query.toLowerCase()));
+
+      setSuggestions(mockSuggestions.slice(0, 5));
+      setShowSuggestions(true);
+      console.log('Suggestions set:', mockSuggestions.slice(0, 5));
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  };
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (search.length >= 2) {
+        fetchSuggestions(search);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 300); // 300ms bekle
+  
+    return () => clearTimeout(timeoutId);
+  }, [search]);
 
   return (
     <>
@@ -95,25 +156,79 @@ const Navbar = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Ara..."
-                className="px-4 py-2 pr-10 border border-gray-300 rounded-md"
+                placeholder="Ürün ara..."
+                value={search}
+                onFocus={() => {
+                  if (suggestions.length > 0) {
+                    setShowSuggestions(true);
+                  }
+                }}
+                onBlur={() => {
+                  setTimeout(() => {
+                    setShowSuggestions(false);
+                  }, 200);
+                }}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                }}
+                onKeyDown={handleKeyPress}
+                className="px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              {/* arama butonu iconu */}
-              <svg
-                className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer"
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+              {/* Arama butonu iconu - tıklanabilir hale getir */}
+              <button
+                onClick={handleSearch}
+                className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer hover:opacity-70 transition-opacity"
               >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M9 2C5.13401 2 2 5.13401 2 9C2 12.866 5.13401 16 9 16C10.8859 16 12.5977 15.2542 13.8564 14.0414C13.8827 14.0072 13.9115 13.9742 13.9429 13.9429C13.9742 13.9115 14.0072 13.8827 14.0414 13.8564C15.2542 12.5977 16 10.8859 16 9C16 5.13401 12.866 2 9 2ZM16.0319 14.6177C17.2635 13.078 18 11.125 18 9C18 4.02944 13.9706 0 9 0C4.02944 0 0 4.02944 0 9C0 13.9706 4.02944 18 9 18C11.125 18 13.078 17.2635 14.6177 16.0319L18.2929 19.7071C18.6834 20.0976 19.3166 20.0976 19.7071 19.7071C20.0976 19.3166 20.0976 18.6834 19.7071 18.2929L16.0319 14.6177Z"
-                  fill="black"
-                />
-              </svg>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M9 2C5.13401 2 2 5.13401 2 9C2 12.866 5.13401 16 9 16C10.8859 16 12.5977 15.2542 13.8564 14.0414C13.8827 14.0072 13.9115 13.9742 13.9429 13.9429C13.9742 13.9115 14.0072 13.8827 14.0414 13.8564C15.2542 12.5977 16 10.8859 16 9C16 5.13401 12.866 2 9 2ZM16.0319 14.6177C17.2635 13.078 18 11.125 18 9C18 4.02944 13.9706 0 9 0C4.02944 0 0 4.02944 0 9C0 13.9706 4.02944 18 9 18C11.125 18 13.078 17.2635 14.6177 16.0319L18.2929 19.7071C18.6834 20.0976 19.3166 20.0976 19.7071 19.7071C20.0976 19.3166 20.0976 18.6834 19.7071 18.2929L16.0319 14.6177Z"
+                    fill="black"
+                  />
+                </svg>
+              </button>
+              
+              {/* arama önerileri */}
+              {showSuggestions && (
+                console.log('Rendering dropdown with suggestions:', suggestions),
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-[9999] max-h-60 overflow-y-auto">
+                  {isLoadingSuggestions ? (
+                    <div className="px-4 py-2 text-gray-500 text-sm">
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 mr-2"></div>
+                        Öneriler yükleniyor...
+                      </div>
+                    </div>
+                  ) : suggestions.length > 0 ? (
+                    suggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          setSearch(suggestion);
+                          setShowSuggestions(false);
+                          window.location.href = `/products?search=${encodeURIComponent(
+                            suggestion
+                          )}`;
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 transition-colors border-b border-gray-100 last:border-b-0"
+                      >
+                        {suggestion}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-2 text-gray-500 text-sm">
+                      Öneri bulunamadı
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* profil iconu */}
@@ -238,13 +353,13 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Auth Toast */}
       <AuthToast
         show={toast.show}
         message={toast.message}
         position={toast.position}
-        onClose={() => setToast({ show: false, message: '' })}
+        onClose={() => setToast({ show: false, message: "" })}
       />
     </>
   );

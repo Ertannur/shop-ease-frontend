@@ -119,7 +119,7 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
         id: product.productId,
         name: product.title,
         price: product.price,
-        image: product.images[0],
+        image: product.imageUrl,
         selectedColor: selectedColor || "Varsayılan",
         selectedSize,
         quantity,
@@ -151,7 +151,7 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
       id: product.productId,
       name: product.title,
       price: product.price,
-      image: product.images[0],
+      image: product.imageUrl,
       selectedColor: selectedColor || "Varsayılan",
       selectedSize,
     };
@@ -244,7 +244,7 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
           <div className="mb-4">
             <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden relative">
               <Image
-                src={product.images[0] || "/images/placeholder-product.png"}
+                src={product.imageUrl || "/images/placeholder-product.png"}
                 alt={product.title}
                 fill
                 className="object-cover"
@@ -262,7 +262,7 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
               }`}
             >
               <Image
-                src={product.images[0] || "/images/placeholder-product.png"}
+                src={product.imageUrl || "/images/placeholder-product.png"}
                 alt={product.title}
                 fill
                 className="object-cover"

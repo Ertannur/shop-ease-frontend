@@ -5,7 +5,7 @@ export interface ApiProduct {
   productId: string;
   name: string;
   price: number;
-  images: string[];
+  imageUrl: string;
   details?: ApiProductDetail[]
 }
 
