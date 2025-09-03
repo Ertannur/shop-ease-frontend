@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 const Footer = () => {
   return (
@@ -13,51 +14,56 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* Kampanyalar Bölümü */}
+        {/* Kampanyalar Bölümü 
+        dinamik route kullanarak olan sayfa üzerinde başlık değişerek geliyor.
+        query parametleri ile aynı sayfada farklı içerikler geliyor.
+        next.js' nin özelliği olarak tek sayfada farklı içerikler geliyor.
+        */}
+          
         <div>
           <h4 className="text-lg font-semibold mb-4 uppercase tracking-wide">
             KAMPANYALAR
           </h4>
           <ul className="space-y-2">
             <li>
-              <a
-                href="#"
+              <Link
+                href="/products?type=discounted" 
                 className="text-gray-600 hover:text-black transition-colors"
               >
                 İNDİRİMLİ ÜRÜNLER
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href="#"
+              <Link
+                href="/products?type=best-sellers"
                 className="text-gray-600 hover:text-black transition-colors"
               >
                 EN ÇOK SATANLAR
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href="#"
+              <Link
+                href="/products?type=weekly"
                 className="text-gray-600 hover:text-black transition-colors"
               >
                 HAFTANIN ÜRÜNLERİ
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href="#"
+              <Link
+                href="/products?type=new"
                 className="text-gray-600 hover:text-black transition-colors"
               >
                 YENİ ÜRÜNLER
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href="#"
+              <Link
+                href="/products?type=discounted"
                 className="text-gray-600 hover:text-black transition-colors"
               >
                 FIRSAT ÜRÜNLERİ
-              </a>
+              </Link>
             </li>
           </ul>
         </div>

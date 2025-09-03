@@ -27,3 +27,19 @@ export const searchProductsByNameAPI = async (
     throw error;
   }
 };
+
+export const getFilteredProductsAPI = async (
+  type: `new` | `discounted` | `weekly` | `best-sellers`,
+  currentPage: number = 1,
+  pageSize: number = 8
+): Promise<ProductsResponse> => {
+  try {
+    const response = await api.get<ProductsResponse>(
+      `${PRODUCT_ENDPOINTS.getFilteredProducts}?currentPage=${currentPage}&pageSize=${pageSize}&type=${type}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("❌ Get Filtered Products API Error:", error);
+    throw error;
+  }
+}
