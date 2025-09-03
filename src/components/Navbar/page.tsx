@@ -5,6 +5,8 @@ import { useCartStore, useLikeStore } from "@/stores";
 import { useAuthStore } from "@/features/auth";
 import { useLogout } from "@/features/auth";
 import AuthToast from "@/components/Toast/AuthToast";
+import { searchProductsByNameAPI } from "@/services/productsApi";
+
 
 const Navbar = () => {
   const [isHydrated, setIsHydrated] = useState(false);
@@ -77,21 +79,10 @@ const Navbar = () => {
 
     setIsLoadingSuggestions(true);
     try {
-      // Basit öneriler - gerçek API'den gelecek
-      const mockSuggestions = [
-        "Kadın Bluz",
-        "Erkek Gömlek",
-        "Çocuk Tişört",
-        "Kadın Pantolon",
-        "Erkek Jean",
-        "Kadın Elbise",
-        "Erkek Mont",
-        "Çocuk Ayakkabı",
-      ].filter((item) => item.toLowerCase().includes(query.toLowerCase()));
-
-      setSuggestions(mockSuggestions.slice(0, 5));
-      setShowSuggestions(true);
-      console.log('Suggestions set:', mockSuggestions.slice(0, 5));
+     const response = await searchProductsByNameAPI(query, 1, 5);
+     const productNames = response.products.map(product => product.name);
+     setSuggestions(productNames);
+     setShowSuggestions(true);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
     } finally {

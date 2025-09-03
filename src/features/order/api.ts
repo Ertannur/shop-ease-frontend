@@ -21,7 +21,7 @@ export const createOrderAPI = async (adressId: string): Promise<ApiResponse> => 
 
 export const listCurrentUserOrdersAPI = async (): Promise<UserOrdersResponse> => {
   try {
-    const response = await api.get<UserOrdersResponse>(
+    const response = await api.post<UserOrdersResponse>(
       ORDER_ENDPOINTS.listCurrentUserOrders
     );
     return response.data;

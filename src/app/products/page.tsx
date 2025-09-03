@@ -5,9 +5,10 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useLikeStore } from "@/stores";
-import { formatTL } from "@/lib";
+import { api, formatTL, PRODUCT_ENDPOINTS } from "@/lib";
 import AuthToast from "@/components/Toast/AuthToast";
 import { ApiProduct, ProductsResponse } from "@/Types";
+import { searchProductsByNameAPI } from "@/services/productsApi";
 
 const ProductsPage = () => {
   const searchParams = useSearchParams();
@@ -30,6 +31,7 @@ const ProductsPage = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [pagination, setPagination] = useState({
     totalPage: 0,
     totalCount: 0,
@@ -37,47 +39,33 @@ const ProductsPage = () => {
     hasNextPage: false
   });
 
+  const PRODUCTS_PER_PAGE = 8;
+
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchProducts = async (page: number = 1, append: boolean = false) => {
       try {
         setLoading(true);
         
-        let apiUrl = `${Base_Url}/api/Product/GetProducts?page=${currentPage}&pageSize=8`;
-        
-        // Kategori parametresi varsa ekle
-        if (category) {
-          apiUrl += `&category=${category}`;
-        }
-        
-        // Arama parametresi varsa ekle
+        let response: ProductsResponse;
         if (search) {
-          apiUrl += `&search=${encodeURIComponent(search)}`;
+          // Arama varsa yeni API'yi kullan
+          response = await searchProductsByNameAPI(search, page, PRODUCTS_PER_PAGE);
+        } else {
+          // Arama yoksa normal API'yi kullan
+          const apiUrl = `${PRODUCT_ENDPOINTS.getProducts}?currentPage=${page}&pageSize=${PRODUCTS_PER_PAGE}`;
+          const apiResponse = await api.get<ProductsResponse>(apiUrl);
+          response = apiResponse.data;
         }
         
-        const response = await axios.get<ProductsResponse>(apiUrl);
-        console.log('API Response:', response.data);
-        console.log('Products:', response.data.products);
-        console.log('API URL:', apiUrl);
-        
-        // Frontend'de arama filtresi uygula
-        let filteredProducts = response.data.products;
-        if (search) {
-          filteredProducts = response.data.products.filter(product => 
-            product.name.toLowerCase().includes(search.toLowerCase()) ||
-            product.description?.toLowerCase().includes(search.toLowerCase())
-          );
+        if (append) {
+          setProducts(prev => [...prev, ...response.products]);
+        } else {
+          setProducts(response.products);
         }
         
-        setProducts(filteredProducts);
-        setPagination({
-          totalPage: response.data.totalPage,
-          totalCount: response.data.totalCount,
-          hasPreviousPage: response.data.hasPreviousPage,
-          hasNextPage: response.data.hasNextPage
-        });
-      } catch (err) {
-        setError('Ürünler yüklenirken bir hata oluştu');
-        console.error('Error fetching products:', err);
+        setHasMore(response.products.length === PRODUCTS_PER_PAGE);
+      } catch (error) {
+        console.error("Error fetching products:", error);
       } finally {
         setLoading(false);
       }

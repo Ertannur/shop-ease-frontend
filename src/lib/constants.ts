@@ -24,6 +24,7 @@ export const PRODUCT_ENDPOINTS = {
   getFavoriteProducts: "/api/Product/GetFavoriteProducts", // New endpoint
   addFavoriteProduct: "/api/Product/AddFavoriteProduct",
   deleteFavoriteProduct: "/api/Product/DeleteFavoriteProduct",
+  getProductsByName: "/api/Product/GetProductsByName", // New search endpoint
 } as const;
 
 export const PRODUCT_DETAIL_ENDPOINTS = {
