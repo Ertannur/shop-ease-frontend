@@ -12,7 +12,6 @@ import { ApiProduct, ProductsResponse } from "@/Types";
 const ProductsPage = () => {
   const searchParams = useSearchParams();
   const category = searchParams.get('category');
-  const search = searchParams.get('search');
   
   const [toast, setToast] = useState<{
     show: boolean;
@@ -21,7 +20,7 @@ const ProductsPage = () => {
   }>({ show: false, message: '' });
 
   const Base_Url = "https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net"
-  
+
   const addToLikes = useLikeStore((state) => state.addToLikes);
   const isItemLiked = useLikeStore((state) => state.isItemLiked);
 
@@ -41,34 +40,19 @@ const ProductsPage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        
+
         let apiUrl = `${Base_Url}/api/Product/GetProducts?page=${currentPage}&pageSize=8`;
-        
+
         // Kategori parametresi varsa ekle
         if (category) {
           apiUrl += `&category=${category}`;
-        }
-        
-        // Arama parametresi varsa ekle
-        if (search) {
-          apiUrl += `&search=${encodeURIComponent(search)}`;
         }
         
         const response = await axios.get<ProductsResponse>(apiUrl);
         console.log('API Response:', response.data);
         console.log('Products:', response.data.products);
         console.log('API URL:', apiUrl);
-        
-        // Frontend'de arama filtresi uygula
-        let filteredProducts = response.data.products;
-        if (search) {
-          filteredProducts = response.data.products.filter(product => 
-            product.name.toLowerCase().includes(search.toLowerCase()) ||
-            product.description?.toLowerCase().includes(search.toLowerCase())
-          );
-        }
-        
-        setProducts(filteredProducts);
+        setProducts(response.data.products);
         setPagination({
           totalPage: response.data.totalPage,
           totalCount: response.data.totalCount,
@@ -88,37 +72,23 @@ const ProductsPage = () => {
 
   const loadMoreProducts = async () => {
     if (loadingMore || !pagination.hasNextPage) return;
-    
+
     try {
       setLoadingMore(true);
       const nextPage = currentPage + 1;
       let apiUrl = `${Base_Url}/api/Product/GetProducts?page=${nextPage}&pageSize=8`;
-      
+
       // Kategori parametresi varsa ekle
       if (category) {
         apiUrl += `&category=${category}`;
       }
       
-      // Arama parametresi varsa ekle
-      if (search) {
-        apiUrl += `&search=${encodeURIComponent(search)}`;
-      }
-      
       const response = await axios.get<ProductsResponse>(apiUrl);
-      
+
       // Mevcut ürünlere yeni ürünleri ekle (duplicate kontrol ile)
       setProducts(prevProducts => {
         const existingIds = new Set(prevProducts.map(p => p.productId));
-        let newProducts = response.data.products.filter((p: ApiProduct) => !existingIds.has(p.productId));
-        
-        // Arama filtresi uygula
-        if (search) {
-          newProducts = newProducts.filter(product => 
-            product.name.toLowerCase().includes(search.toLowerCase()) ||
-            product.description?.toLowerCase().includes(search.toLowerCase())
-          );
-        }
-        
+        const newProducts = response.data.products.filter((p: ApiProduct) => !existingIds.has(p.productId));
         return [...prevProducts, ...newProducts];
       });
       setCurrentPage(nextPage);
@@ -161,9 +131,7 @@ const ProductsPage = () => {
       {/* Başlık */}
       <div className="mb-8">
         <h1 className="text-3xl font-normal">
-          {search ? `"${search}" için arama sonuçları` : 
-           category ? `${category.charAt(0).toUpperCase() + category.slice(1)} Ürünleri` : 
-           'Yeni Ürünler'}
+          {category ? `${category.charAt(0).toUpperCase() + category.slice(1)} Ürünleri` : 'Yeni Ürünler'}
         </h1>
       </div>
 
@@ -174,11 +142,11 @@ const ProductsPage = () => {
             {/* Ürün Görseli */}
             <div className="relative bg-gray-200 rounded-lg overflow-hidden mb-4 group-hover:shadow-lg transition-shadow duration-300">
               <Image 
-                src={product.imageUrl || "/placeholder-product.jpg"}
+                src={product.imageUrl || "/placeholder-product.jpg"} 
                 alt={product.name}
                 width={300}
                 height={400}
-                className="w-full aspect-[3/4] object-cover"
+                className="w-full aspect-[3/4] object-cover "
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'%3E%3Crect width='300' height='400' fill='%23cccccc'/%3E%3Ctext x='150' y='200' text-anchor='middle' fill='%23666666' font-family='Arial' font-size='16'%3EÜrün Resmi%3C/text%3E%3C/svg%3E";
@@ -190,14 +158,14 @@ const ProductsPage = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  
+
                   // Mouse pozisyonunu al
                   const rect = e.currentTarget.getBoundingClientRect();
                   const position = {
                     x: rect.left + rect.width / 2,
                     y: rect.top
                   };
-                  
+
                   addToLikes({
                     id: product.productId,
                     name: product.name,
@@ -244,8 +212,8 @@ const ProductsPage = () => {
 
       {/* Daha Fazla Yükle Butonu */}
       {pagination.hasNextPage && (
-      <div className="text-center mt-12">
-          <button 
+        <div className="text-center mt-12">
+          <button
             onClick={loadMoreProducts}
             disabled={loadingMore}
             className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
@@ -258,10 +226,10 @@ const ProductsPage = () => {
             ) : (
               'Daha Fazla Ürün Göster'
             )}
-        </button>
-      </div>
+          </button>
+        </div>
       )}
-      
+
       {/* Auth Toast */}
       <AuthToast
         show={toast.show}
