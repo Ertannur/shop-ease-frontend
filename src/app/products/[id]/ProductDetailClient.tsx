@@ -6,7 +6,10 @@ import { formatTL } from "@/lib";
 import AuthToast from "@/components/Toast/AuthToast";
 import SuccessToast from "@/components/Toast/SuccessToast";
 import { ApiProduct } from "@/Types";
-import { getProductByIdAPI, searchProductsByNameAPI } from "@/services/productsApi";
+import {
+  getProductByIdAPI,
+  searchProductsByNameAPI,
+} from "@/services/productsApi";
 import Image from "next/image";
 
 interface ProductDetailClientProps {
@@ -45,7 +48,7 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
         console.log("API çağrısı yapılıyor, ID:", id);
         const productData = await getProductByIdAPI(id);
         console.log("API'den gelen raw response:", productData);
-        
+
         // Detail API'sinde images array olarak geliyor, imageUrl'e çevir
         if (productData.images && productData.images.length > 0) {
           productData.imageUrl = productData.images[0];
@@ -53,17 +56,25 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
           // Eğer resim yoksa, arama API'sinden tamamla
           try {
             console.log("Resim eksik, arama API'sinden tamamlanıyor...");
-            const searchResponse = await searchProductsByNameAPI(productData.title, 1, 1);
-            const foundProduct = searchResponse.products.find(p => p.productId === productData.productId);
+            const searchResponse = await searchProductsByNameAPI(
+              productData.title,
+              1,
+              1
+            );
+            const foundProduct = searchResponse.products.find(
+              (p) => p.productId === productData.productId
+            );
             if (foundProduct && foundProduct.imageUrl) {
               productData.imageUrl = foundProduct.imageUrl;
-              console.log(`Resim tamamlandı: ${productData.title} -> ${foundProduct.imageUrl}`);
+              console.log(
+                `Resim tamamlandı: ${productData.title} -> ${foundProduct.imageUrl}`
+              );
             }
           } catch (error) {
             console.error("Error fetching image for product:", error);
           }
         }
-        
+
         setProduct(productData);
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -123,14 +134,14 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
       setSuccessToast({
         show: true,
         message: `Stokta ${availableStock} adet ürün var!`,
-      })
+      });
       return;
     }
 
     console.log("Sepete eklenen veri:", {
       selectedColor,
       selectedSize,
-      quantity
+      quantity,
     });
 
     try {
@@ -263,7 +274,10 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
           <div className="mb-4">
             <div className="aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden relative">
               <Image
-                src={product.imageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'%3E%3Crect width='300' height='400' fill='%23f3f4f6'/%3E%3Ctext x='150' y='200' text-anchor='middle' fill='%236b7280' font-family='Arial' font-size='14'%3EÜrün Resmi%3C/text%3E%3C/svg%3E"}
+                src={
+                  product.imageUrl ||
+                  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'%3E%3Crect width='300' height='400' fill='%23f3f4f6'/%3E%3Ctext x='150' y='200' text-anchor='middle' fill='%236b7280' font-family='Arial' font-size='14'%3EÜrün Resmi%3C/text%3E%3C/svg%3E"
+                }
                 alt={product.title}
                 fill
                 className="object-cover"
@@ -281,7 +295,10 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
               }`}
             >
               <Image
-                src={product.imageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'%3E%3Crect width='300' height='400' fill='%23f3f4f6'/%3E%3Ctext x='150' y='200' text-anchor='middle' fill='%236b7280' font-family='Arial' font-size='14'%3EÜrün Resmi%3C/text%3E%3C/svg%3E"}
+                src={
+                  product.imageUrl ||
+                  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'%3E%3Crect width='300' height='400' fill='%23f3f4f6'/%3E%3Ctext x='150' y='200' text-anchor='middle' fill='%236b7280' font-family='Arial' font-size='14'%3EÜrün Resmi%3C/text%3E%3C/svg%3E"
+                }
                 alt={product.title}
                 fill
                 className="object-cover"
@@ -348,9 +365,18 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
               onChange={(e) => setSelectedSize(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-black dark:focus:border-white bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             >
-              <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white" value="">Beden seçiniz</option>
+              <option
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                value=""
+              >
+                Beden seçiniz
+              </option>
               {product.details?.map((detail) => (
-                <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white" key={detail.size} value={detail.size}>
+                <option
+                  className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  key={detail.size}
+                  value={detail.size}
+                >
                   {detail.size}
                 </option>
               ))}
@@ -447,6 +473,8 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
         show={successToast.show}
         message={successToast.message}
         onClose={() => setSuccessToast({ show: false, message: "" })}
+        duration={2000}
+        position="bottom-left"
       />
 
       {/* Auth Toast */}
