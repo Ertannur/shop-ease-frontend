@@ -342,13 +342,15 @@ const ProductDetailClient = ({ id }: ProductDetailClientProps) => {
           <div className="mb-6">
             <h3 className="text-sm font-medium mb-2">Beden Seç</h3>
             <select
+              id="size-select"
+              name="size"
               value={selectedSize}
               onChange={(e) => setSelectedSize(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-black"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:border-black dark:focus:border-white bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             >
-              <option value="">Beden seçiniz</option>
+              <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white" value="">Beden seçiniz</option>
               {product.details?.map((detail) => (
-                <option key={detail.size} value={detail.size}>
+                <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white" key={detail.size} value={detail.size}>
                   {detail.size}
                 </option>
               ))}

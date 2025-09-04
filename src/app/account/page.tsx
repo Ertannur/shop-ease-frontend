@@ -219,10 +219,10 @@ export default function AccountPage() {
 
   return (
     <AuthGuard>
-      <div className="container py-12 max-w-6xl">
+      <div className="container py-12 max-w-6xl  dark:bg-slate-900 min-h-screen">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Hesabım</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 dark:text-slate-700 mt-1">
             Hoş geldin, <strong>{displayName}</strong> 👋
           </p>
         </div>
@@ -232,8 +232,8 @@ export default function AccountPage() {
           <div
             className={`mb-6 p-4 rounded-lg ${
               message.type === "success"
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
+                ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+                : "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
             }`}
           >
             <div className="flex justify-between items-center">
@@ -246,7 +246,7 @@ export default function AccountPage() {
         )}
 
         {/* Navigation Tabs */}
-        <div className="border-b border-gray-200 mb-8">
+        <div className="border-b border-gray-200 dark:border-gray-700 mb-8">
           <nav className="flex space-x-8">
             {[
               { id: "profile", label: "Profil Bilgileri" },
@@ -266,8 +266,8 @@ export default function AccountPage() {
                 }}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === tab.id
-                    ? "border-black text-black"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    ? "border-black dark:border-white dark:text-white font-semibold"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
                 }`}
               >
                 {tab.label}
@@ -277,7 +277,7 @@ export default function AccountPage() {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           {activeTab === "profile" && (
             <div>
               <h2 className="text-xl font-semibold mb-6">Profil Bilgileri</h2>
@@ -287,7 +287,7 @@ export default function AccountPage() {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Ad
                     </label>
                     <input
@@ -299,11 +299,11 @@ export default function AccountPage() {
                           firstName: e.target.value,
                         })
                       }
-                      className="w-full border rounded-lg px-3 py-2"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700  dark:text-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Soyad
                     </label>
                     <input
@@ -315,13 +315,13 @@ export default function AccountPage() {
                           lastName: e.target.value,
                         })
                       }
-                      className="w-full border rounded-lg px-3 py-2"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700  dark:text-white"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     E-posta
                   </label>
                   <input
@@ -330,12 +330,12 @@ export default function AccountPage() {
                     onChange={(e) =>
                       setProfileForm({ ...profileForm, email: e.target.value })
                     }
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700  dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Telefon
                   </label>
                   <input
@@ -347,14 +347,14 @@ export default function AccountPage() {
                         phoneNumber: e.target.value,
                       })
                     }
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700  dark:text-white"
                     placeholder="05xxxxxxxxx"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Doğum Tarihi
                     </label>
                     <input
@@ -366,11 +366,11 @@ export default function AccountPage() {
                           dateOfBirth: e.target.value,
                         })
                       }
-                      className="w-full border rounded-lg px-3 py-2"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700  dark:text-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Cinsiyet
                     </label>
                     <select
@@ -381,7 +381,7 @@ export default function AccountPage() {
                           gender: parseInt(e.target.value) as 0 | 1,
                         })
                       }
-                      className="w-full border rounded-lg px-3 py-2"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700  dark:text-white"
                     >
                       <option value={0}>Erkek</option>
                       <option value={1}>Kadın</option>
@@ -402,15 +402,15 @@ export default function AccountPage() {
 
           {activeTab === "orders" && (
             <div>
-              <h2 className="text-xl font-semibold mb-6">Siparişlerim</h2>
+              <h2 className="text-xl font-semibold mb-6 dark:text-white">Siparişlerim</h2>
               {loading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Siparişler yükleniyor...</p>
+                  <p className="mt-2 text-gray-600 dark:text-slate-700">Siparişler yükleniyor...</p>
                 </div>
               ) : orders.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-600">Henüz siparişiniz bulunmuyor.</p>
+                  <p className="text-gray-600 dark:text-slate-700">Henüz siparişiniz bulunmuyor.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -424,10 +424,10 @@ export default function AccountPage() {
                           <h3 className="font-medium">
                             Sipariş #{order.orderId}
                           </h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-slate-700">
                             {formatDate(order.orderDate)}
                           </p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-slate-700">
                             Teslimat: {order.address}
                           </p>
                         </div>
@@ -462,7 +462,7 @@ export default function AccountPage() {
                               ))}
                             </div>
                           ) : (
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 dark:text-slate-700">
                               Bu siparişte ürün bilgisi bulunmuyor
                             </p>
                           )}
@@ -477,10 +477,10 @@ export default function AccountPage() {
 
           {activeTab === "addresses" && (
             <div>
-              <h2 className="text-xl font-semibold mb-6">Adreslerim</h2>
+              <h2 className="text-xl font-semibold mb-6 dark:text-white">Adreslerim</h2>
 
               {/* Add Address Form */}
-              <div className="bg-gray-50 rounded-lg p-6 mb-6">
+              <div className=" dark:bg-slate-800 rounded-lg p-6 mb-6">
                 <h3 className="font-medium mb-4">Yeni Adres Ekle</h3>
                 <form onSubmit={handleAddAddress} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -609,11 +609,11 @@ export default function AccountPage() {
               {loading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Adresler yükleniyor...</p>
+                  <p className="mt-2 text-gray-600 dark:text-slate-700">Adresler yükleniyor...</p>
                 </div>
               ) : addresses.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-600">Henüz adresiniz bulunmuyor.</p>
+                  <p className="text-gray-600 dark:text-slate-700">Henüz adresiniz bulunmuyor.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -625,7 +625,7 @@ export default function AccountPage() {
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-medium">{address.title}</h3>
                       </div>
-                      <div className="text-sm text-gray-600 space-y-1">
+                      <div className="text-sm text-gray-600 dark:text-slate-700 space-y-1">
                         <p>
                           <strong>
                             {address.name} {address.surname}
@@ -647,13 +647,13 @@ export default function AccountPage() {
 
           {activeTab === "password" && (
             <div>
-              <h2 className="text-xl font-semibold mb-6">Şifre Değiştir</h2>
+              <h2 className="text-xl font-semibold mb-6 text-white dark:text-white">Şifre Değiştir</h2>
               <form
                 onSubmit={handlePasswordChange}
                 className="max-w-md space-y-4"
               >
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Mevcut Şifre
                   </label>
                   <input
@@ -670,7 +670,7 @@ export default function AccountPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Yeni Şifre
                   </label>
                   <input
@@ -688,7 +688,7 @@ export default function AccountPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Yeni Şifre (Tekrar)
                   </label>
                   <input
@@ -708,7 +708,7 @@ export default function AccountPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                  className="bg-black dark:text-white px-6 py-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50"
                 >
                   {loading ? "Değiştiriliyor..." : "Şifreyi Değiştir"}
                 </button>
@@ -721,7 +721,7 @@ export default function AccountPage() {
         <div className="mt-8 pt-8 border-t">
           <button
             onClick={logout}
-            className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600"
+            className="bg-red-500 text-white dark:text-black px-6 py-2 rounded-lg hover:bg-red-600"
           >
             Çıkış Yap
           </button>

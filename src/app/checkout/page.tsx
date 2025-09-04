@@ -270,7 +270,7 @@ const CheckoutPage = () => {
                       key={address.adressId}
                       className={`border rounded-lg p-4 cursor-pointer transition-colors ${
                         selectedAddressId === address.adressId
-                          ? "border-black bg-gray-50"
+                          ? "border-gray-300 dark:bg-slate-800"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                       onClick={() => setSelectedAddressId(address.adressId)}
@@ -449,10 +449,10 @@ const CheckoutPage = () => {
         </div>
         {/* Payment Section */}
         <hr className="my-8" />
-        <div className="max-w-2xl">
-          <h2 className="text-xl font-semibold mb-4">Ödeme Bilgileri</h2>
+        <div className="max-w-2xl dark:bg-slate-900">
+          <h2 className="text-xl  font-semibold mb-4">Ödeme Bilgileri</h2>
 
-          <div className="bg-gray-50 rounded-lg p-6">
+          <div className="bg-gray dark:bg-slate-800 rounded-lg p-6">
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -536,7 +536,7 @@ const CheckoutPage = () => {
           </div>
           {/* Right Column - Order Summary */}
           <div>
-            <div className="bg-gray-50 rounded-lg p-6 sticky top-8">
+            <div className=" dark:bg-slate-800 rounded-lg p-6 sticky top-8">
               <h2 className="text-xl font-semibold mb-4">Sipariş Özeti</h2>
 
               {/* Cart Items */}

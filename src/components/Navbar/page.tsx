@@ -6,7 +6,7 @@ import { useAuthStore } from "@/features/auth";
 import { useLogout } from "@/features/auth";
 import AuthToast from "@/components/Toast/AuthToast";
 import { searchProductsByNameAPI } from "@/services/productsApi";
-
+import { usePathname } from "next/navigation";
 
 const Navbar = () => {
   const [isHydrated, setIsHydrated] = useState(false);
@@ -14,12 +14,13 @@ const Navbar = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   const [toast, setToast] = useState<{
     show: boolean;
     message: string;
     position?: { x: number; y: number };
   }>({ show: false, message: "" });
-
+  const pathname = usePathname();
   const totalItems = useCartStore((state) => state.getTotalItems());
   const totalLikes = useLikeStore((state) => state.getTotalItems());
   const isAuthenticated = useAuthStore((state) => state.isAuthed());
@@ -27,11 +28,35 @@ const Navbar = () => {
   const logout = useLogout();
   const displayName =
     user?.firstName || user?.name || user?.email || "Kullanıcı";
+  const [isAtTop, setIsAtTop] = useState(true);
 
   // Hydration tamamlandığında state'i güncelle
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem("darkMode") === "true";
+    setIsDark(savedDarkMode);
+    if (savedDarkMode) {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsAtTop(scrollTop < 50);
+    };
+    window.addEventListener(`scroll`, handleScroll);
+    return () => window.removeEventListener(`scroll`, handleScroll);
+  }, []);
+
+  const toggleDarkMode = () => {
+    setIsDark(!isDark);
+    document.documentElement.classList.toggle("dark");
+    localStorage.setItem("darkMode", (!isDark).toString());
+  };
 
   // Hydration tamamlanmadıysa authentication state'ini gösterme
   const showAuthState = isHydrated && isAuthenticated;
@@ -79,10 +104,10 @@ const Navbar = () => {
 
     setIsLoadingSuggestions(true);
     try {
-     const response = await searchProductsByNameAPI(query, 1, 5);
-     const productNames = response.products.map(product => product.name);
-     setSuggestions(productNames);
-     setShowSuggestions(true);
+      const response = await searchProductsByNameAPI(query, 1, 5);
+      const productNames = response.products.map((product) => product.name);
+      setSuggestions(productNames);
+      setShowSuggestions(true);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
     } finally {
@@ -98,56 +123,73 @@ const Navbar = () => {
         setShowSuggestions(false);
       }
     }, 300); // 300ms bekle
-  
+
     return () => clearTimeout(timeoutId);
   }, [search]);
-
+  const isActive = (path: string) => {
+    // URL'deki query parametrelerini kontrol et
+    if (pathname.includes("/products")) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const category = urlParams.get("category");
+      return category === path;
+    }
+    return pathname === path;
+  };
   return (
-    <>
+    <div
+      className={`modern-navbar sticky top-0 z-50 bg-white dark:bg-gray-900 backdrop-blur-sm border-b border-gray-200 dark:border-slate-700 ${
+        isAtTop ? "at-top" : ""
+      }`}
+    >
       <div className="container py-4">
         <div className="flex justify-between items-center">
           <div className="flex gap-4">
             <Link
               href="/products?category=kadın"
-              className="hover:text-gray-600 transition-colors"
+              className={`nav-menu-item ${isActive("kadın") ? "active" : ""}`}
             >
               Kadın
             </Link>
             <Link
               href="/products?category=erkek"
-              className="hover:text-gray-600 transition-colors"
+              className={`nav-menu-item ${isActive("erkek") ? "active" : ""}`}
             >
               Erkek
             </Link>
             <Link
               href="/products?category=çocuk"
-              className="hover:text-gray-600 transition-colors"
+              className={`nav-menu-item ${isActive("çocuk") ? "active" : ""}`}
             >
               Çocuk
             </Link>
             <Link
               href="/products?category=montlar"
-              className="hover:text-gray-600 transition-colors"
+              className={`nav-menu-item ${isActive("montlar") ? "active" : ""}`}
             >
-              Outlet
+              Montlar
             </Link>
             <Link
               href="/products?category=jean"
-              className="hover:text-gray-600 transition-colors"
+              className={`nav-menu-item ${isActive("jean") ? "active" : ""}`}
             >
-              Geri Dönüştür
+              Jean
             </Link>
           </div>
           {/* logo */}
           <div className="text-2xl font-bold">
-            <Link href="/">ShopEase</Link>
+            <Link href="/" className="gradient-text">
+              ShopEase
+            </Link>
           </div>
           {/* arama butonu */}
           <div className="flex gap-4 items-center">
-            <div className="relative">
+            <div className="relative flex-1 max-w-md mx-8">
               <input
+                id="search-input"
+                name="search"
                 type="text"
                 placeholder="Ürün ara..."
+                className="soft-input w-full pr-12 dark:text-black"
                 value={search}
                 onFocus={() => {
                   if (suggestions.length > 0) {
@@ -163,7 +205,6 @@ const Navbar = () => {
                   setSearch(e.target.value);
                 }}
                 onKeyDown={handleKeyPress}
-                className="px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               {/* Arama butonu iconu - tıklanabilir hale getir */}
               <button
@@ -185,48 +226,63 @@ const Navbar = () => {
                   />
                 </svg>
               </button>
-              
-              {/* arama önerileri */}
-              {showSuggestions && (
-                console.log('Rendering dropdown with suggestions:', suggestions),
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-[9999] max-h-60 overflow-y-auto">
-                  {isLoadingSuggestions ? (
-                    <div className="px-4 py-2 text-gray-500 text-sm">
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 mr-2"></div>
-                        Öneriler yükleniyor...
-                      </div>
-                    </div>
-                  ) : suggestions.length > 0 ? (
-                    suggestions.map((suggestion, index) => (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          setSearch(suggestion);
-                          setShowSuggestions(false);
-                          window.location.href = `/products?search=${encodeURIComponent(
-                            suggestion
-                          )}`;
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 transition-colors border-b border-gray-100 last:border-b-0"
-                      >
-                        {suggestion}
-                      </button>
-                    ))
-                  ) : (
-                    <div className="px-4 py-2 text-gray-500 text-sm">
-                      Öneri bulunamadı
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
 
+              {/* arama önerileri */}
+              {showSuggestions &&
+                (console.log(
+                  "Rendering dropdown with suggestions:",
+                  suggestions
+                ),
+                (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-md shadow-lg z-[9999] max-h-60 overflow-y-auto">
+                    {isLoadingSuggestions ? (
+                      <div className="px-4 py-2 text-gray-500 dark:text-slate-700 text-sm">
+                        <div className="flex items-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 dark:border-slate-700 mr-2"></div>
+                          Öneriler yükleniyor...
+                        </div>
+                      </div>
+                    ) : suggestions.length > 0 ? (
+                      suggestions.map((suggestion, index) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            setSearch(suggestion);
+                            setShowSuggestions(false);
+                            window.location.href = `/products?search=${encodeURIComponent(
+                              suggestion
+                            )}`;
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors border-b border-gray-100 dark:border-slate-700 last:border-b-0"
+                        >
+                          {suggestion}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-2 text-gray-500 dark:text-slate-700 text-sm">
+                        Öneri bulunamadı
+                      </div>
+                    )}
+                  </div>
+                ))}
+            </div>
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+            >
+              {isDark ? "☀️" : "🌙"}
+            </button>
             {/* profil iconu */}
             {showAuthState ? (
               <>
                 {/* Hoş geldin etiketi */}
-                <span className="hidden md:inline-block text-sm text-gray-700 mr-2">
+                <span
+                  className={`hidden md:inline-block text-sm mr-2 ${
+                    isAtTop
+                      ? "text-gray-300"
+                      : "text-gray-700 dark:text-slate-700"
+                  }`}
+                >
                   Hoş geldin, <strong>{displayName}</strong>
                 </span>
 
@@ -248,29 +304,29 @@ const Navbar = () => {
                     </svg>
                   </button>
                   {/* Dropdown Menu */}
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg dark:shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                     <div className="py-2">
-                      <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="text-xs text-gray-500">Merhaba,</p>
-                        <p className="text-sm font-medium truncate">
+                      <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-600">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Merhaba,</p>
+                        <p className="text-sm font-medium truncate text-gray-900 dark:text-white">
                           {displayName}
                         </p>
                       </div>
                       <Link
                         href="/account"
-                        className="block px-4 py-2 text-sm hover:bg-gray-50"
+                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       >
                         Hesabım
                       </Link>
                       <Link
                         href="/orders"
-                        className="block px-4 py-2 text-sm hover:bg-gray-50"
+                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       >
                         Siparişlerim
                       </Link>
                       <button
                         onClick={logout}
-                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                       >
                         Çıkış Yap
                       </button>
@@ -279,11 +335,17 @@ const Navbar = () => {
                 </div>
               </>
             ) : isHydrated ? (
-              <div className="flex items-center gap-3">
+              <div
+                className={`flex items-center gap-3 ${
+                  isAtTop ? "text-gray-300" : ""
+                }`}
+              >
                 <Link href="/login" className="text-sm hover:underline">
                   Giriş Yap
                 </Link>
-                <span className="text-gray-300">/</span>
+                <span className={isAtTop ? "text-gray-500" : "text-gray-300"}>
+                  /
+                </span>
                 <Link href="/register" className="text-sm hover:underline">
                   Kayıt Ol
                 </Link>
@@ -352,7 +414,7 @@ const Navbar = () => {
         position={toast.position}
         onClose={() => setToast({ show: false, message: "" })}
       />
-    </>
+    </div>
   );
 };
 

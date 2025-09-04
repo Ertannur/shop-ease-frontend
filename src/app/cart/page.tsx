@@ -43,9 +43,9 @@ const CartPage = () => {
 
   if (cartItems.length === 0) {
     return (
-      <div className="container py-8 min-h-[60vh] flex flex-col items-center justify-center">
+      <div className="container py-8 min-h-[60vh] flex flex-col items-center justify-center dark:bg-slate-900">
         <div className="text-center">
-          <svg className="w-24 h-24 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-24 h-24 mx-auto mb-4 text-gray-300 dark:text-white-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5H19M7 13v6a1 1 0 001 1h10a1 1 0 001-1v-6M7 13L5.4 5M17 13v6M9 19v2m6-2v2"/>
           </svg>
           <h2 className="text-2xl font-semibold text-gray-700 mb-2">Sepetiniz Boş</h2>
@@ -70,11 +70,11 @@ const CartPage = () => {
             <li key={breadcrumb.name} className="flex items-center">
               {index > 0 && <span className="mx-2 text-gray-400">/</span>}
               {index === breadcrumbs.length - 1 ? (
-                <span className="text-gray-900 font-medium">
+                <span className="font-medium dark:text-white">
                   {breadcrumb.name}
                 </span>
               ) : (
-                <Link href={breadcrumb.href} className="text-gray-500 hover:text-gray-700">
+                <Link href={breadcrumb.href} className=" hover:text-gray-400 dark:text-white">
                   {breadcrumb.name}
                 </Link>
               )}
@@ -83,7 +83,7 @@ const CartPage = () => {
         </ol>
       </nav>
 
-      <h1 className="text-3xl font-bold mb-8">Sepetim</h1>
+      <h1 className="text-3xl font-bold mb-8 dark:text-white">Sepetim</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Sepet Ürünleri */}
@@ -91,7 +91,7 @@ const CartPage = () => {
           {cartItems.map((item, index) => (
             <div
               key={`${item.id}-${item.selectedColor}-${item.selectedSize}`}
-              className="bg-white border border-gray-200 rounded-lg p-6"
+              className=" border border-gray-200 rounded-lg p-6"
             >
               <div className="flex gap-4">
                 {/* Ürün Resmi */}
@@ -158,7 +158,7 @@ const CartPage = () => {
 
         {/* Sipariş Özeti */}
         <div className="lg:col-span-1">
-          <div className="bg-gray-50 rounded-lg p-6 sticky top-4">
+          <div className="border border-gray-200 dark:bg-slate-800 rounded-lg p-6 sticky top-4">
             <h3 className="text-lg font-semibold mb-4">Sipariş Özeti</h3>
             
             <div className="space-y-3 mb-4">
@@ -190,7 +190,7 @@ const CartPage = () => {
 
             <Link
               href="/products"
-              className="w-full text-center text-gray-600 hover:text-gray-800 py-2 text-sm block mt-3"
+              className="w-full text-center  hover:text-gray-400 dark:text-white py-2 text-sm block mt-3"
             >
               Alışverişe Devam Et
             </Link>

@@ -22,7 +22,7 @@ const ThankYouPage = () => {
   }
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 dark:bg-slate-900">
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-green-600 mb-2">
@@ -32,7 +32,7 @@ const ThankYouPage = () => {
       </div>
 
       {/* Order Details */}
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6 mb-8">
+      <div className="max-w-2xl mx-auto  rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">Sipariş Detayları</h2>
 
         <div className="space-y-4">
@@ -54,7 +54,7 @@ const ThankYouPage = () => {
       </div>
 
       {/* Products */}
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6 mb-8">
+      <div className="max-w-2xl mx-auto  rounded-lg shadow-md p-6 mb-8">
         <h3 className="text-lg font-semibold mb-4">Sipariş Edilen Ürünler</h3>
 
         <div className="space-y-3">

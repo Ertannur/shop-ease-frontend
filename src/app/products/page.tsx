@@ -181,7 +181,7 @@ const ProductsPage = () => {
       <div className="container py-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
-          <p className="mt-4 text-gray-600">Ürünler yükleniyor...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Ürünler yükleniyor...</p>
         </div>
       </div>
     );
@@ -191,17 +191,17 @@ const ProductsPage = () => {
     return (
       <div className="container py-8">
         <div className="text-center">
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-600 dark:text-red-400">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 dark:bg-slate-900 min-h-screen ">
       {/* Başlık */}
       <div className="mb-8">
-        <h1 className="text-3xl font-normal">
+        <h1 className="text-3xl font-normal dark:text-white">
           {search
             ? `"${search}" için arama sonuçları`
             : type === "new"
@@ -229,7 +229,7 @@ const ProductsPage = () => {
             className="group cursor-pointer block"
           >
             {/* Ürün Görseli */}
-            <div className="relative bg-gray-200 rounded-lg overflow-hidden mb-4 group-hover:shadow-lg transition-shadow duration-300">
+            <div className="relative bg-gray-200 dark:bg-slate-800 rounded-lg overflow-hidden mb-4 group-hover:shadow-lg transition-shadow duration-300">
               <Image
                 src={product.imageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'%3E%3Crect width='300' height='400' fill='%23f3f4f6'/%3E%3Ctext x='150' y='200' text-anchor='middle' fill='%236b7280' font-family='Arial' font-size='14'%3EÜrün Resmi%3C/text%3E%3C/svg%3E"}
                 alt={product.name}
@@ -304,10 +304,10 @@ const ProductsPage = () => {
 
             {/* Ürün Bilgileri */}
             <div className="space-y-1 text-left">
-              <h3 className="font-medium text-gray-900 group-hover:text-black transition-colors">
+              <h3 className="font-medium  dark:text-white  dark:group-hover:text-gray-400 transition-colors">
                 {product.name}
               </h3>
-              <p className="font-semibold text-gray-900">
+              <p className="font-semibold  dark:text-white">
                 {formatTL(product.price)}
               </p>
             </div>
