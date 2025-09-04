@@ -54,7 +54,7 @@ const DiscountSection = () => {
   return (
     <div className="container py-8">
     <div 
-      className="relative w-full h-[596px] overflow-hidden rounded-lg"
+      className="relative w-full h-[596px] overflow-hidden rounded-2xl"
       onMouseEnter={() => setIsPaused(true)}  // Mouse üzerindeyken durdur
       onMouseLeave={() => setIsPaused(false)} // Mouse çıkınca devam et
     >

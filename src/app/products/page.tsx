@@ -201,7 +201,7 @@ const ProductsPage = () => {
     <div className="container py-8 dark:bg-slate-900 min-h-screen ">
       {/* Başlık */}
       <div className="mb-8">
-        <h1 className="text-3xl font-normal dark:text-white">
+        <h1 className="text-3xl font-bold dark:text-white gradient-text">
           {search
             ? `"${search}" için arama sonuçları`
             : type === "new"
