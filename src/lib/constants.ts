@@ -44,6 +44,8 @@ export const ORDER_ENDPOINTS = {
 export const ADDRESS_ENDPOINTS = {
   addAddress: "/api/Adress/AddAdress",
   getUserAddress: "/api/Adress/GetUserAdress",
+  updateAddress: "/api/Adress/UpdateAdress",
+  deleteAddress: "/api/Adress/DeleteAdress",
 } as const;
 
 export const BASKET_ENDPOINTS = {

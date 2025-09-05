@@ -1,4 +1,4 @@
-// Address related types based on Swagger documentation
+// Address related types based on Backend API documentation
 
 export interface Address {
   adressId: string; // Note: Backend uses "adressId" not "addressId"
@@ -23,6 +23,26 @@ export interface AddAddressRequest {
   city: string;
   district: string;
   postCode: string;
+}
+
+export interface UpdateAddressRequest extends AddAddressRequest {
+  adressId: string;
+}
+
+export interface DeleteAddressRequest {
+  adressId: string;
+}
+
+export interface AddressApiResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface AddressValidationError {
+  Message: string;
+  Errors: {
+    [key: string]: string[];
+  };
 }
 
 export type UserAddressResponse = Address[];
