@@ -1,1 +1,1 @@
-export * from './useSignalRChat';
+// Hooks barrel exports - currently empty

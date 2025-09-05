@@ -4,4 +4,3 @@ export * from "./Order";
 export * from "./Product";
 export * from "./Basket";
 export * from "./Address";
-export * from "./Chat";
