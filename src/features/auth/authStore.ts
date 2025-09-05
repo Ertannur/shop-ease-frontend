@@ -18,6 +18,7 @@ type AuthState = {
   setSession: (user: User | null, accessToken: string | null, refreshToken?: string | null) => void;
   clearSession: () => void;
   isAuthed: () => boolean;
+  updateUser: (user: User) => void; // Kullanıcı bilgilerini güncelleme
 };
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -59,6 +60,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ user: null, accessToken: null, refreshToken: null });
   },
   isAuthed: () => !!(get().user || tokenManager.getAccessToken()),
+  updateUser: (user: User) => set({ user }), // Kullanıcı bilgilerini güncelle
 }));
 
 // İlk yüklemede localStorage'taki token'ı kontrol et

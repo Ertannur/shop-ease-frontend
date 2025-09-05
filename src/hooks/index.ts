@@ -1,1 +1,2 @@
-// Hooks barrel exports - currently empty
+// Hooks barrel exports
+export * from './useUserSession';

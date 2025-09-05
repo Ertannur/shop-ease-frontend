@@ -1,8 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AuthGuard } from "@/components";
 import { useAuthStore, useLogout } from "@/features/auth";
-import { updateUserAPI, changePasswordAPI } from "@/features/user";
+import { updateUserAPI, changePasswordAPI, getUserByIdAPI } from "@/features/user";
 import { getUserAddressAPI, addAddressAPI, updateAddressAPI, deleteAddressAPI } from "@/features/address";
 import { listCurrentUserOrdersAPI } from "@/features/order";
 import {
@@ -37,6 +37,7 @@ export default function AccountPage() {
     phoneNumber: "",
     dateOfBirth: "",
     gender: 0 as 0 | 1,
+    password: "", // Backend UpdateUser API'si için gerekli
   });
 
   // Password form state
@@ -65,6 +66,30 @@ export default function AccountPage() {
   const displayName =
     user?.firstName || user?.name || user?.email || "Kullanıcı";
 
+  // Kullanıcı profil bilgilerini yükle
+  const loadUserProfile = useCallback(async () => {
+    if (!user?.id) return;
+    
+    try {
+      setLoading(true);
+      const userProfile = await getUserByIdAPI(user.id);
+      setProfileForm({
+        firstName: userProfile.firstName || "",
+        lastName: userProfile.lastName || "",
+        email: userProfile.email || "",
+        phoneNumber: userProfile.phoneNumber || "",
+        dateOfBirth: userProfile.dateOfBirth || "",
+        gender: userProfile.gender || 0,
+        password: "", // Boş bırakıyoruz, kullanıcı güncellerken girecek
+      });
+    } catch (error) {
+      console.error("Failed to load user profile:", error);
+      setMessage({ type: "error", text: "Profil bilgileri yüklenirken hata oluştu" });
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id]);
+
   useEffect(() => {
     console.log("Active tab changed to:", activeTab);
     if (activeTab === "orders") {
@@ -72,8 +97,17 @@ export default function AccountPage() {
       loadOrders();
     } else if (activeTab === "addresses") {
       loadAddresses();
+    } else if (activeTab === "profile") {
+      loadUserProfile();
     }
-  }, [activeTab]);
+  }, [activeTab, loadUserProfile]);
+
+  // Kullanıcı profil bilgilerini yükle
+  useEffect(() => {
+    if (user?.id) {
+      loadUserProfile();
+    }
+  }, [user?.id, loadUserProfile]);
 
   const loadOrders = async () => {
     console.log("loadOrders function called");
@@ -108,6 +142,12 @@ export default function AccountPage() {
     e.preventDefault();
     if (!user?.id) return;
 
+    // Şifre kontrolü
+    if (!profileForm.password.trim()) {
+      setMessage({ type: "error", text: "Profil güncellemesi için mevcut şifrenizi girmeniz gerekiyor" });
+      return;
+    }
+
     try {
       setLoading(true);
       const updateData: UpdateUserRequest = {
@@ -118,9 +158,13 @@ export default function AccountPage() {
         phoneNumber: profileForm.phoneNumber,
         dateOfBirth: profileForm.dateOfBirth,
         gender: profileForm.gender,
+        password: profileForm.password, // Backend'in zorunlu kıldığı alan
       };
 
       await updateUserAPI(updateData);
+      
+      // Şifre alanını temizle
+      setProfileForm(prev => ({ ...prev, password: "" }));
       setMessage({ type: "success", text: "Profil başarıyla güncellendi" });
     } catch (error) {
       console.error("Profile update failed:", error);
@@ -150,7 +194,6 @@ export default function AccountPage() {
     try {
       setLoading(true);
       const changeData: ChangePasswordRequest = {
-        id: user.id,
         oldPassword: passwordForm.oldPassword,
         newPassword: passwordForm.newPassword,
       };
@@ -467,6 +510,28 @@ export default function AccountPage() {
                       <option value={1}>Kadın</option>
                     </select>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Mevcut Şifre (Güncelleme için gerekli)
+                  </label>
+                  <input
+                    type="password"
+                    value={profileForm.password}
+                    onChange={(e) =>
+                      setProfileForm({
+                        ...profileForm,
+                        password: e.target.value,
+                      })
+                    }
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700  dark:text-white"
+                    placeholder="Mevcut şifrenizi girin"
+                    required
+                  />
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Profil bilgilerini güncellemek için mevcut şifrenizi girmeniz gerekmektedir.
+                  </p>
                 </div>
 
                 <button

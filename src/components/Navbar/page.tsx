@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useCartStore, useLikeStore } from "@/stores";
 import { useAuthStore } from "@/features/auth";
 import { useLogout } from "@/features/auth";
+import { useUserSession } from "@/hooks";
 import AuthToast from "@/components/Toast/AuthToast";
 import { searchProductsByNameAPI } from "@/services/productsApi";
 import { usePathname } from "next/navigation";
@@ -26,6 +27,10 @@ const Navbar = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthed());
   const user = useAuthStore((state) => state.user);
   const logout = useLogout();
+  
+  // Kullanıcı bilgilerini yükle
+  useUserSession();
+  
   const displayName =
     user?.firstName || user?.name || user?.email || "Kullanıcı";
   const [isAtTop, setIsAtTop] = useState(true);

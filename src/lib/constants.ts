@@ -14,6 +14,7 @@ export const AUTH_ENDPOINTS = {
 export const USER_ENDPOINTS = {
   updateUser: "/api/User/UpdateUser",
   getUserById: "/api/User/GetUserById", // Updated endpoint name
+  getCurrentUser: "/api/User/GetCurrentUser", // New endpoint
   changePassword: "/api/User/ChangePassword",
 } as const;
 

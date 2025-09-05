@@ -147,12 +147,26 @@ export const refreshTokenAPI = async (refreshToken: string): Promise<RefreshToke
 // src/features/auth/api.ts
 export async function getSession() {
   try {
+    // Önce mevcut endpoint'i dene
     const res = await api.get(AUTH_ENDPOINTS.roles);
     const payload = res.data;
     if (payload?.user) return payload.user;
     if (payload?.email || payload?.id) return payload; // bazı backendlere uyum
     return null;
   } catch {
-    return null;
+    // Eğer roles endpoint'i çalışmazsa getCurrentUser'ı dene
+    try {
+      const { getCurrentUserAPI } = await import('@/features/user/api');
+      const currentUser = await getCurrentUserAPI();
+      return {
+        id: currentUser.userId,
+        email: currentUser.email,
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        roles: currentUser.roles
+      };
+    } catch {
+      return null;
+    }
   }
 }

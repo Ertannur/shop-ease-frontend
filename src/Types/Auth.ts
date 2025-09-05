@@ -69,7 +69,6 @@ export interface ResetPasswordRequest {
 }
 
 export interface ChangePasswordRequest {
-  id: string;
   oldPassword: string;
   newPassword: string;
 }
@@ -82,7 +81,26 @@ export interface UpdateUserRequest {
   dateOfBirth?: string;
   email?: string;
   phoneNumber?: string;
-  password?: string;
+  password: string; // Required for update user
+}
+
+// Backend responses
+export interface GetUserByIdResponse {
+  id: string;
+  firstName: string;
+  gender: 0 | 1;
+  lastName: string;
+  dateOfBirth: string;
+  email: string;
+  phoneNumber: string;
+}
+
+export interface GetCurrentUserResponse {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  roles: string[];
 }
 
 export interface ApiResponse {
