@@ -5,7 +5,8 @@ import {
   LoginRequest, 
   AuthResponse, 
   ForgotPasswordRequest, 
-  ResetPasswordRequest 
+  ResetPasswordRequest,
+  RefreshTokenResponse 
 } from "@/Types";
 import { AxiosError } from 'axios';
 
@@ -104,6 +105,30 @@ export const resetPasswordAPI = async (data: ResetPasswordRequest): Promise<Auth
     return response.data;
   } catch (error: unknown) {
     console.error('Reset Password API Error:', error);
+    
+    if (error instanceof AxiosError) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+    }
+    
+    if (error instanceof Error) {
+      throw new Error(error.message || 'Network error occurred');
+    }
+    
+    throw new Error('Network error occurred');
+  }
+};
+
+export const refreshTokenAPI = async (refreshToken: string): Promise<RefreshTokenResponse> => {
+  try {
+    const response = await api.post<RefreshTokenResponse>(AUTH_ENDPOINTS.refresh, {
+      refreshToken
+    });
+
+    return response.data;
+  } catch (error: unknown) {
+    console.error('Refresh Token API Error:', error);
     
     if (error instanceof AxiosError) {
       if (error.response?.data?.message) {

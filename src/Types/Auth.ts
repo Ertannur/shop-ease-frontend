@@ -23,6 +23,38 @@ export interface AuthResponse {
     accessToken: string;
     expiration: string;
     refreshToken?: string | null;
+    tokenType?: string;
+  };
+  user?: {
+    userId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    birthDate: string;
+    gender: 0 | 1;
+    phoneNumber: string;
+    roles: string[];
+  };
+}
+
+export interface RefreshTokenResponse {
+  success: boolean;
+  message: string;
+  token?: {
+    accessToken: string;
+    expiration: string;
+    refreshToken?: string | null;
+    tokenType?: string;
+  };
+  user?: {
+    userId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    birthDate: string;
+    gender: 0 | 1;
+    phoneNumber: string;
+    roles: string[];
   };
 }
 

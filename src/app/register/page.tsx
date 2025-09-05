@@ -54,7 +54,7 @@ export default function RegisterPage() {
     email: "",
     password: "",
     dateOfBirth: "",
-    gender: 0 as 0 | 1 | 2, // 0: Erkek, 1: Kadın, 2: Diğer (backend enum'una göre ayarla)
+    gender: 0 as 0 | 1, // 0: Erkek, 1: Kadın
   });
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -113,14 +113,14 @@ export default function RegisterPage() {
           localStorage.setItem('token', result.token.accessToken);
           
           const userInfo = {
-            id: result.userId || '',
-            email: form.email,
+            id: result.user?.userId || result.userId || '',
+            email: result.user?.email || form.email,
             firstName: result.user?.firstName || form.firstName,
             lastName: result.user?.lastName || form.lastName,
             roles: result.user?.roles || []
           };
           
-          setSession(userInfo, result.token.accessToken);
+          setSession(userInfo, result.token.accessToken, result.token.refreshToken);
           
           // Kullanıcının backend'teki verilerini yükle (yeni kullanıcı için boş olacak)
           try {
@@ -222,13 +222,12 @@ export default function RegisterPage() {
           className="w-full border p-3 rounded"
           value={form.gender}
           onChange={(e) =>
-            setForm({ ...form, gender: Number(e.target.value) as 0 | 1 | 2 })
+            setForm({ ...form, gender: Number(e.target.value) as 0 | 1 })
           }
           required
         >
           <option value={0}>Erkek</option>
           <option value={1}>Kadın</option>
-          <option value={2}>Diğer</option>
         </select>
 
         {err && <p className="text-red-600 text-sm">{err}</p>}

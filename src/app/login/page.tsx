@@ -33,16 +33,16 @@ export default function LoginPage() {
         // Token'ı localStorage'a kaydet
         localStorage.setItem('token', result.token.accessToken);
         
-        // User bilgilerini auth store'a kaydet
+        // User bilgilerini auth store'a kaydet (backend response'tan al)
         const userInfo = {
-          id: result.userId || '',
-          email: form.email,
-          /* firstName: result.user?.firstName,
+          id: result.user?.userId || result.userId || '',
+          email: result.user?.email || form.email,
+          firstName: result.user?.firstName,
           lastName: result.user?.lastName,
-          roles: result.user?.roles || [] */
+          roles: result.user?.roles || []
         };
         
-        setSession(userInfo, result.token.accessToken);
+        setSession(userInfo, result.token.accessToken, result.token.refreshToken);
         
         // Kullanıcının backend'teki verilerini yükle
         try {
@@ -98,6 +98,13 @@ export default function LoginPage() {
           {loading ? "Gönderiliyor..." : "Giriş Yap"}
         </button>
       </form>
+      
+      <p className="mt-4 text-sm text-center">
+        <Link href="/forgot-password" className="text-blue-600 hover:underline">
+          Şifremi Unuttum
+        </Link>
+      </p>
+      
       <p className="mt-4 text-sm">
         Hesabın yok mu? <Link href="/register" className="underline">Kayıt ol</Link>
       </p>
