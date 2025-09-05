@@ -15,8 +15,14 @@ interface LiveChatProps {
 export const LiveChat = ({ isOpen, onClose }: LiveChatProps) => {
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Hydration mismatch'i önlemek için
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Store hooks
   const { user } = useAuthStore();
@@ -33,13 +39,13 @@ export const LiveChat = ({ isOpen, onClose }: LiveChatProps) => {
     addMessage,
   } = useChatStore();
 
-  // SignalR hook
+  // SignalR hook - sadece client-side'da çalıştır
   const {
     connectionStatus,
     isConnected,
     sendMessage: sendSignalRMessage,
   } = useSignalRChat({
-    userId: user?.id || null,
+    userId: isMounted && user?.id ? user.id : null,
     onMessageReceived: (chatMessage: ChatModel) => {
       // Convert ChatModel to ChatMessage and add to store
       const message = {
@@ -113,7 +119,7 @@ export const LiveChat = ({ isOpen, onClose }: LiveChatProps) => {
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !isMounted) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-end p-4">

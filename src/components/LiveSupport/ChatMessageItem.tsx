@@ -1,6 +1,7 @@
 'use client';
 
 import { ChatMessage } from '@/Types';
+import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
@@ -15,9 +16,18 @@ export const ChatMessageItem = ({
   currentUserId, 
   isTyping = false 
 }: ChatMessageItemProps) => {
+  const [isMounted, setIsMounted] = useState(false);
+  
+  // Hydration mismatch'i önlemek için
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const isOwn = message.userId === currentUserId;
   
   const formatTime = (dateString: string) => {
+    if (!isMounted) return 'Şimdi'; // SSR sırasında sabit değer döndür
+    
     try {
       const date = new Date(dateString);
       return formatDistanceToNow(date, { 

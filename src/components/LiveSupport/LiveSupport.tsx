@@ -1,14 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SupportButton } from './SupportButton';
 import { LiveChat } from './LiveChat';
 import { useAuthStore } from '@/features/auth';
 
 export const LiveSupport = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const { isAuthed } = useAuthStore();
-  const isAuthenticated = isAuthed();
+  
+  // Hydration mismatch'i önlemek için client-side'da mount durumunu kontrol et
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const isAuthenticated = isMounted ? isAuthed() : false;
 
   const handleOpenChat = () => {
     if (!isAuthenticated) {
@@ -22,6 +29,11 @@ export const LiveSupport = () => {
   const handleCloseChat = () => {
     setIsChatOpen(false);
   };
+
+  // SSR sırasında hiçbir şey render etme
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <>

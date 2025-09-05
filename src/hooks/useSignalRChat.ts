@@ -144,6 +144,9 @@ export const useSignalRChat = ({
 
   // Initialize connection when userId is available
   useEffect(() => {
+    // SSR sırasında bağlantı kurmayı engelle
+    if (typeof window === 'undefined') return;
+    
     if (userId) {
       startConnection();
     } else {
