@@ -4,9 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-import { useLikeStore } from "@/stores";
+import { useLikeStore, useCartStore } from "@/stores";
 import { api, formatTL, PRODUCT_ENDPOINTS } from "@/lib";
 import AuthToast from "@/components/Toast/AuthToast";
+import SuccessToast from "@/components/Toast/SuccessToast";
 import { ApiProduct, ProductsResponse } from "@/Types";
 import {
   getFilteredProductsAPI,
@@ -24,11 +25,17 @@ const ProductsPage = () => {
     position?: { x: number; y: number };
   }>({ show: false, message: "" });
 
+  const [successToast, setSuccessToast] = useState<{
+    show: boolean;
+    message: string;
+  }>({ show: false, message: "" });
+
   const Base_Url =
     "https://eticaret-dgf7fgcehscsfka3.canadacentral-01.azurewebsites.net";
 
   const addToLikes = useLikeStore((state) => state.addToLikes);
   const isItemLiked = useLikeStore((state) => state.isItemLiked);
+  const addToCart = useCartStore((state) => state.addToCart);
 
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,6 +51,27 @@ const ProductsPage = () => {
   });
 
   const PRODUCTS_PER_PAGE = 8;
+
+  const getBadgeForType = (
+    t: string | null
+  ): { label: string; className: string } | null => {
+    switch (t) {
+      case "new":
+        return { label: "Yeni", className: "bg-emerald-500" };
+      case "discounted":
+        return { label: "İndirim", className: "bg-rose-500" };
+      case "weekly":
+        return { label: "Haftanın", className: "bg-indigo-500" };
+      case "best-sellers":
+        return { label: "Çok Satan", className: "bg-amber-500" };
+      case "deals":
+        return { label: "Fırsat", className: "bg-sky-500" };
+      default:
+        return null;
+    }
+  };
+
+  const badge = React.useMemo(() => getBadgeForType(type), [type]);
 
   useEffect(() => {
     const fetchProducts = async (page: number = 1, append: boolean = false) => {
@@ -72,8 +100,9 @@ const ProductsPage = () => {
             hasImage: !!p.imageUrl
           })));
         } else {
-          // Arama yoksa normal API'yi kullan
-          const apiUrl = `${PRODUCT_ENDPOINTS.getProducts}?currentPage=${page}&pageSize=${PRODUCTS_PER_PAGE}`;
+          // Kategori varsa parametre olarak gönder
+          const categoryParam = category ? `&category=${encodeURIComponent(category)}` : "";
+          const apiUrl = `${PRODUCT_ENDPOINTS.getProducts}?currentPage=${page}&pageSize=${PRODUCTS_PER_PAGE}${categoryParam}`;
           const apiResponse = await api.get<ProductsResponse>(apiUrl);
           response = apiResponse.data;
           console.log("NORMAL API Response:", response.products);
@@ -107,7 +136,13 @@ const ProductsPage = () => {
           setProducts(completedProducts);
         }
 
-        setHasMore(response.products.length === PRODUCTS_PER_PAGE);
+        setHasMore(response.hasNextPage ?? response.products.length === PRODUCTS_PER_PAGE);
+        setPagination({
+          totalPage: response.totalPage,
+          totalCount: response.totalCount,
+          hasPreviousPage: response.hasPreviousPage,
+          hasNextPage: response.hasNextPage,
+        });
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
@@ -115,8 +150,10 @@ const ProductsPage = () => {
       }
     };
 
-    fetchProducts();
-  }, [currentPage, category, search, type]);
+    // Kategori/arama/tip değiştiğinde sayfa 1'e dön ve listeyi yenile
+    setCurrentPage(1);
+    fetchProducts(1, false);
+  }, [category, search, type]);
 
   const loadMoreProducts = async () => {
     if (loadingMore || !pagination.hasNextPage) return;
@@ -141,15 +178,10 @@ const ProductsPage = () => {
           PRODUCTS_PER_PAGE
         );
       } else {
-        // Normal API'yi kullan
-        let apiUrl = `${Base_Url}/api/Product/GetProducts?page=${nextPage}&pageSize=8`;
-
-        // Kategori parametresi varsa ekle
-        if (category) {
-          apiUrl += `&category=${category}`;
-        }
-
-        const apiResponse = await axios.get<ProductsResponse>(apiUrl);
+        // Normal API'yi kullan (kategori desteği ile)
+        const categoryParam = category ? `&category=${encodeURIComponent(category)}` : "";
+        const apiUrl = `${PRODUCT_ENDPOINTS.getProducts}?currentPage=${nextPage}&pageSize=${PRODUCTS_PER_PAGE}${categoryParam}`;
+        const apiResponse = await api.get<ProductsResponse>(apiUrl);
         response = apiResponse.data;
       }
 
@@ -226,23 +258,32 @@ const ProductsPage = () => {
           <Link
             key={product.productId}
             href={`/products/${product.productId}`}
-            className="group cursor-pointer block"
+            className="group cursor-pointer block rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 shadow-sm hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
           >
             {/* Ürün Görseli */}
-            <div className="relative bg-gray-200 dark:bg-slate-800 rounded-lg overflow-hidden mb-4 group-hover:shadow-lg transition-shadow duration-300">
+            <div className="relative bg-gray-200 dark:bg-slate-800 aspect-[3/4] overflow-hidden">
               <Image
                 src={product.imageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'%3E%3Crect width='300' height='400' fill='%23f3f4f6'/%3E%3Ctext x='150' y='200' text-anchor='middle' fill='%236b7280' font-family='Arial' font-size='14'%3EÜrün Resmi%3C/text%3E%3C/svg%3E"}
                 alt={product.name}
                 width={300}
                 height={400}
-                className="w-full aspect-[3/4] object-cover"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src =
                     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'%3E%3Crect width='300' height='400' fill='%23f3f4f6'/%3E%3Ctext x='150' y='200' text-anchor='middle' fill='%236b7280' font-family='Arial' font-size='14'%3EÜrün Resmi%3C/text%3E%3C/svg%3E";
                 }}
               />
-
+              {/* Gradient overlay */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              {/* Badge */}
+              {badge && (
+                <span
+                  className={`absolute left-3 top-3 text-xs font-medium text-white px-2.5 py-1 rounded-full shadow-sm ${badge.className}`}
+                >
+                  {badge.label}
+                </span>
+              )}
               {/* Hover'da görünen kalp ikonu */}
               <button
                 onClick={(e) => {
@@ -300,16 +341,91 @@ const ProductsPage = () => {
                   />
                 </svg>
               </button>
+              {/* Hover'da görünen hızlı sepete ekle ikonu */}
+              <button
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  try {
+                    await addToCart({
+                      id: product.productId,
+                      name: product.name,
+                      price: product.price,
+                      image: product.imageUrl,
+                      selectedColor: "Varsayılan",
+                      selectedSize: "M",
+                      quantity: 1,
+                    });
+                    setSuccessToast({
+                      show: true,
+                      message: `${product.name} sepete eklendi!`,
+                    });
+                  } catch (err) {
+                    setSuccessToast({
+                      show: true,
+                      message: "Ürün sepete eklenemedi!",
+                    });
+                  }
+                }}
+                className="absolute top-4 right-14 w-8 h-8 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-gray-100 z-10 text-gray-600"
+                aria-label="Hızlı Sepete Ekle"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m12-9l2 9M10 21a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z"
+                  />
+                </svg>
+              </button>
+              {/* Hover'da ortaya çıkan Sepete Ekle */}
+              <button
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  try {
+                    await addToCart({
+                      id: product.productId,
+                      name: product.name,
+                      price: product.price,
+                      image: product.imageUrl,
+                      selectedColor: "Varsayılan",
+                      selectedSize: "M",
+                      quantity: 1,
+                    });
+                    setSuccessToast({
+                      show: true,
+                      message: `${product.name} sepete eklendi!`,
+                    });
+                  } catch (err) {
+                    setSuccessToast({
+                      show: true,
+                      message: "Ürün sepete eklenemedi!",
+                    });
+                  }
+                }}
+                className="absolute bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 bg-black/80 text-white px-4 py-2 rounded-full backdrop-blur supports-[backdrop-filter]:backdrop-blur-md shadow-md"
+                aria-label="Sepete Ekle"
+              >
+                Sepete Ekle
+              </button>
             </div>
 
             {/* Ürün Bilgileri */}
-            <div className="space-y-1 text-left">
-              <h3 className="font-medium  dark:text-white  dark:group-hover:text-gray-400 transition-colors">
+            <div className="p-4 text-left">
+              <h3 className="font-medium text-gray-900 dark:text-white dark:group-hover:text-gray-300 transition-colors line-clamp-2 min-h-[3rem]">
                 {product.name}
               </h3>
-              <p className="font-semibold  dark:text-white">
+              <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
                 {formatTL(product.price)}
               </p>
+
             </div>
           </Link>
         ))}
@@ -341,6 +457,13 @@ const ProductsPage = () => {
         message={toast.message}
         position={toast.position}
         onClose={() => setToast({ show: false, message: "" })}
+      />
+      <SuccessToast
+        show={successToast.show}
+        message={successToast.message}
+        onClose={() => setSuccessToast({ show: false, message: "" })}
+        duration={1800}
+        position="bottom-right"
       />
     </div>
   );

@@ -17,6 +17,7 @@ const CheckoutPage = () => {
   const getTotalPrice = useCartStore((state) => state.getTotalPrice);
   const clearCart = useCartStore((state) => state.clearCart);
   const setOrderData = useOrderStore((state) => state.setOrderData);
+  const addToOrderHistory = useOrderStore((state) => state.addToOrderHistory);
   const [isLoading, setIsLoading] = useState(true);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
@@ -259,6 +260,7 @@ const CheckoutPage = () => {
       };
 
       setOrderData(orderData);
+      addToOrderHistory(orderData);
       // Order başarılı, sepeti temizle
       clearCart();
 

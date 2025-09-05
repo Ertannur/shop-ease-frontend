@@ -406,7 +406,7 @@ export default function AccountPage() {
               <h2 className="text-xl font-semibold mb-6">Profil Bilgileri</h2>
               <form
                 onSubmit={handleProfileUpdate}
-                className="max-w-2xl space-y-4"
+                className="space-y-4"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -827,7 +827,7 @@ export default function AccountPage() {
               <h2 className="text-xl font-semibold mb-6 text-white dark:text-white">Şifre Değiştir</h2>
               <form
                 onSubmit={handlePasswordChange}
-                className="max-w-md space-y-4"
+                className="space-y-4"
               >
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -885,7 +885,7 @@ export default function AccountPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="bg-black dark:text-white px-6 py-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50"
+                  className="bg-black text-white dark:text-white px-6 py-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50"
                 >
                   {loading ? "Değiştiriliyor..." : "Şifreyi Değiştir"}
                 </button>

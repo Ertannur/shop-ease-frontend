@@ -168,7 +168,7 @@ const Navbar = () => {
               Çocuk
             </Link>
             <Link
-              href="/products?category=montlar"
+              href="/products?category=mont"
               className={`nav-menu-item ${isActive("montlar") ? "active" : ""}`}
             >
               Montlar
