@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { AuthGuard } from "@/components";
 import { useAuthStore, useLogout } from "@/features/auth";
 import { updateUserAPI, changePasswordAPI } from "@/features/user";
-import { getUserAddressAPI, addAddressAPI } from "@/features/address";
+import { getUserAddressAPI, addAddressAPI, updateAddressAPI, deleteAddressAPI } from "@/features/address";
 import { listCurrentUserOrdersAPI } from "@/features/order";
 import {
   UpdateUserRequest,
@@ -11,6 +11,8 @@ import {
   Address,
   UserOrder,
   AddAddressRequest,
+  UpdateAddressRequest,
+  DeleteAddressRequest,
 } from "@/Types";
 
 export default function AccountPage() {
@@ -56,6 +58,9 @@ export default function AccountPage() {
     district: "",
     postCode: "",
   });
+
+  // Editing address state
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
   const displayName =
     user?.firstName || user?.name || user?.email || "Kullanıcı";
@@ -170,19 +175,43 @@ export default function AccountPage() {
 
     try {
       setLoading(true);
-      const addData: AddAddressRequest = {
-        title: addressForm.title,
-        name: addressForm.name,
-        surname: addressForm.surname,
-        email: addressForm.email,
-        phone: addressForm.phone,
-        address: addressForm.address,
-        city: addressForm.city,
-        district: addressForm.district,
-        postCode: addressForm.postCode,
-      };
+      
+      if (editingAddress) {
+        // Update existing address
+        const updateData: UpdateAddressRequest = {
+          adressId: editingAddress.adressId,
+          title: addressForm.title,
+          name: addressForm.name,
+          surname: addressForm.surname,
+          email: addressForm.email,
+          phone: addressForm.phone,
+          address: addressForm.address,
+          city: addressForm.city,
+          district: addressForm.district,
+          postCode: addressForm.postCode,
+        };
 
-      await addAddressAPI(addData);
+        await updateAddressAPI(updateData);
+        setMessage({ type: "success", text: "Adres başarıyla güncellendi" });
+        setEditingAddress(null);
+      } else {
+        // Add new address
+        const addData: AddAddressRequest = {
+          title: addressForm.title,
+          name: addressForm.name,
+          surname: addressForm.surname,
+          email: addressForm.email,
+          phone: addressForm.phone,
+          address: addressForm.address,
+          city: addressForm.city,
+          district: addressForm.district,
+          postCode: addressForm.postCode,
+        };
+
+        await addAddressAPI(addData);
+        setMessage({ type: "success", text: "Adres başarıyla eklendi" });
+      }
+
       setAddressForm({
         title: "",
         name: "",
@@ -194,14 +223,65 @@ export default function AccountPage() {
         district: "",
         postCode: "",
       });
-      setMessage({ type: "success", text: "Adres başarıyla eklendi" });
       loadAddresses(); // Refresh addresses
     } catch (error) {
-      console.error("Add address failed:", error);
-      setMessage({ type: "error", text: "Adres eklenirken hata oluştu" });
+      console.error("Address operation failed:", error);
+      setMessage({ 
+        type: "error", 
+        text: editingAddress ? "Adres güncellenirken hata oluştu" : "Adres eklenirken hata oluştu" 
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditAddress = (address: Address) => {
+    setEditingAddress(address);
+    setAddressForm({
+      title: address.title,
+      name: address.name,
+      surname: address.surname,
+      email: address.email,
+      phone: address.phone,
+      address: address.address,
+      city: address.city,
+      district: address.district,
+      postCode: address.postCode,
+    });
+  };
+
+  const handleDeleteAddress = async (adressId: string) => {
+    if (!window.confirm('Bu adresi silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const deleteData: DeleteAddressRequest = { adressId };
+      await deleteAddressAPI(deleteData);
+      setMessage({ type: "success", text: "Adres başarıyla silindi" });
+      loadAddresses(); // Refresh addresses
+    } catch (error) {
+      console.error("Delete address failed:", error);
+      setMessage({ type: "error", text: "Adres silinirken hata oluştu" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingAddress(null);
+    setAddressForm({
+      title: "",
+      name: "",
+      surname: "",
+      email: "",
+      phone: "",
+      address: "",
+      city: "",
+      district: "",
+      postCode: "",
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -479,9 +559,11 @@ export default function AccountPage() {
             <div>
               <h2 className="text-xl font-semibold mb-6 dark:text-white">Adreslerim</h2>
 
-              {/* Add Address Form */}
+              {/* Add/Edit Address Form */}
               <div className=" dark:bg-slate-800 rounded-lg p-6 mb-6">
-                <h3 className="font-medium mb-4">Yeni Adres Ekle</h3>
+                <h3 className="font-medium mb-4">
+                  {editingAddress ? "Adres Düzenle" : "Yeni Adres Ekle"}
+                </h3>
                 <form onSubmit={handleAddAddress} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
@@ -595,13 +677,27 @@ export default function AccountPage() {
                     className="w-full border rounded-lg px-3 py-2 h-20"
                     required
                   />
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-50"
-                  >
-                    {loading ? "Ekleniyor..." : "Adres Ekle"}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                    >
+                      {loading 
+                        ? (editingAddress ? "Güncelleniyor..." : "Ekleniyor...") 
+                        : (editingAddress ? "Adresi Güncelle" : "Adres Ekle")
+                      }
+                    </button>
+                    {editingAddress && (
+                      <button
+                        type="button"
+                        onClick={cancelEdit}
+                        className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600"
+                      >
+                        İptal
+                      </button>
+                    )}
+                  </div>
                 </form>
               </div>
 
@@ -620,10 +716,26 @@ export default function AccountPage() {
                   {addresses.map((address) => (
                     <div
                       key={address.adressId}
-                      className="border rounded-lg p-4"
+                      className="border rounded-lg p-4 hover:shadow-md transition-shadow"
                     >
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-medium">{address.title}</h3>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEditAddress(address)}
+                            className="text-blue-600 hover:text-blue-800 text-sm px-2 py-1 border border-blue-600 rounded hover:bg-blue-50 transition-colors"
+                            title="Düzenle"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAddress(address.adressId)}
+                            className="text-red-600 hover:text-red-800 text-sm px-2 py-1 border border-red-600 rounded hover:bg-red-50 transition-colors"
+                            title="Sil"
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </div>
                       <div className="text-sm text-gray-600 dark:text-slate-700 space-y-1">
                         <p>
