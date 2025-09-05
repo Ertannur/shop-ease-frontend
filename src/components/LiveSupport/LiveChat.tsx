@@ -29,11 +29,13 @@ export const LiveChat = ({ isOpen, onClose }: LiveChatProps) => {
   const {
     messages,
     supportUsers,
+    users,
     currentChatUserId,
     isLoading,
     error,
     setCurrentChatUserId,
     fetchSupportUsers,
+    fetchUsers,
     fetchChats,
     sendMessage: sendApiMessage,
     addMessage,
@@ -74,17 +76,26 @@ export const LiveChat = ({ isOpen, onClose }: LiveChatProps) => {
 
   // Initialize support users and set current chat user
   useEffect(() => {
-    if (isOpen && user) {
-      fetchSupportUsers().then(() => {
-        // Auto-select first support user if available
-        if (supportUsers.length > 0 && !currentChatUserId) {
-          const supportUserId = supportUsers[0].id;
-          setCurrentChatUserId(supportUserId);
-          fetchChats(supportUserId);
-        }
-      });
+    if (isOpen && user && isMounted) {
+      const userRoles = user.roles || [];
+      const isSupport = userRoles.includes('Support') || userRoles.includes('Admin');
+      
+      if (isSupport) {
+        // Support/Admin kullanıcıları için normal kullanıcıları getir
+        fetchUsers();
+      } else {
+        // Normal kullanıcılar için support kullanıcılarını getir
+        fetchSupportUsers().then(() => {
+          // İlk support kullanıcısını otomatik seç
+          if (supportUsers.length > 0 && !currentChatUserId) {
+            const supportUserId = supportUsers[0].id;
+            setCurrentChatUserId(supportUserId);
+            fetchChats(supportUserId);
+          }
+        });
+      }
     }
-  }, [isOpen, user, supportUsers, currentChatUserId, fetchSupportUsers, setCurrentChatUserId, fetchChats]);
+  }, [isOpen, user, isMounted, supportUsers, fetchSupportUsers, fetchUsers, setCurrentChatUserId, fetchChats, currentChatUserId]);
 
   const handleSendMessage = async () => {
     if (!message.trim() || !currentChatUserId || !user) return;
@@ -150,6 +161,45 @@ export const LiveChat = ({ isOpen, onClose }: LiveChatProps) => {
           </button>
         </div>
 
+        {/* User Selection for Support/Admin */}
+        {isMounted && user?.roles && (user.roles.includes('Support') || user.roles.includes('Admin')) && (
+          <div className="p-3 border-b bg-gray-50">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Kullanıcı Seç:
+            </label>
+            <select
+              value={currentChatUserId || ''}
+              onChange={(e) => {
+                const selectedUserId = e.target.value;
+                if (selectedUserId) {
+                  setCurrentChatUserId(selectedUserId);
+                  fetchChats(selectedUserId);
+                }
+              }}
+              className="w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Kullanıcı seçin...</option>
+              {users.map(user => (
+                <option key={user.id} value={user.id}>
+                  {user.fullName}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Chat Partner Info for Regular Users */}
+        {isMounted && user?.roles && !user.roles.includes('Support') && !user.roles.includes('Admin') && currentChatUserId && (
+          <div className="p-3 border-b bg-green-50">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm text-gray-700">
+                {supportUsers.find(su => su.id === currentChatUserId)?.fullName || 'Müşteri Hizmetleri'} ile konuşuyorsunuz
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {isLoading && (
@@ -166,8 +216,16 @@ export const LiveChat = ({ isOpen, onClose }: LiveChatProps) => {
 
           {messages.length === 0 && !isLoading && (
             <div className="text-center text-gray-500 py-8">
-              <p>Henüz mesaj yok.</p>
-              <p className="text-sm">Size nasıl yardımcı olabiliriz?</p>
+              {!currentChatUserId ? (
+                <div>
+                  <p>Kullanıcı seçin ve sohbete başlayın.</p>
+                </div>
+              ) : (
+                <div>
+                  <p>Henüz mesaj yok.</p>
+                  <p className="text-sm">Size nasıl yardımcı olabiliriz?</p>
+                </div>
+              )}
             </div>
           )}
 

@@ -9,10 +9,12 @@ export default function LiveSupportTestPage() {
   const { user } = useAuthStore();
   const { 
     messages, 
-    supportUsers, 
+    supportUsers,
+    users, 
     isLoading, 
     error,
     fetchSupportUsers,
+    fetchUsers,
     fetchChats,
     sendMessage
   } = useChatStore();
@@ -33,9 +35,16 @@ export default function LiveSupportTestPage() {
 
   useEffect(() => {
     if (user) {
-      fetchSupportUsers();
+      const userRoles = user.roles || [];
+      const isSupport = userRoles.includes('Support') || userRoles.includes('Admin');
+      
+      if (isSupport) {
+        fetchUsers();
+      } else {
+        fetchSupportUsers();
+      }
     }
-  }, [user, fetchSupportUsers]);
+  }, [user, fetchSupportUsers, fetchUsers]);
 
   const handleGetChats = async () => {
     if (selectedSupportId) {
@@ -85,6 +94,8 @@ export default function LiveSupportTestPage() {
         <h2 className="text-xl font-semibold mb-2">User Info</h2>
         <p>User ID: {user.id}</p>
         <p>Email: {user.email}</p>
+        <p>Roles: {user.roles?.join(', ') || 'No roles'}</p>
+        <p>Is Support/Admin: {user.roles?.some(role => ['Support', 'Admin'].includes(role)) ? 'Yes' : 'No'}</p>
       </div>
 
       {/* SignalR Status */}
@@ -94,9 +105,11 @@ export default function LiveSupportTestPage() {
         <p>Is Connected: {isConnected ? '✅' : '❌'}</p>
       </div>
 
-      {/* Support Users */}
+      {/* Support Users or Regular Users */}
       <div className="bg-green-100 p-4 rounded-lg">
-        <h2 className="text-xl font-semibold mb-2">Support Users</h2>
+        <h2 className="text-xl font-semibold mb-2">
+          {user.roles?.some(role => ['Support', 'Admin'].includes(role)) ? 'Regular Users' : 'Support Users'}
+        </h2>
         {isLoading && <p>Loading...</p>}
         {error && <p className="text-red-600">Error: {error}</p>}
         
@@ -105,12 +118,22 @@ export default function LiveSupportTestPage() {
           onChange={(e) => setSelectedSupportId(e.target.value)}
           className="w-full p-2 border rounded"
         >
-          <option value="">Select a support user</option>
-          {supportUsers.map(user => (
-            <option key={user.id} value={user.id}>
-              {user.fullName} ({user.id})
-            </option>
-          ))}
+          <option value="">
+            {user.roles?.some(role => ['Support', 'Admin'].includes(role)) ? 'Select a user' : 'Select a support user'}
+          </option>
+          {user.roles?.some(role => ['Support', 'Admin'].includes(role)) ? (
+            users.map(user => (
+              <option key={user.id} value={user.id}>
+                {user.fullName} ({user.id})
+              </option>
+            ))
+          ) : (
+            supportUsers.map(user => (
+              <option key={user.id} value={user.id}>
+                {user.fullName} ({user.id})
+              </option>
+            ))
+          )}
         </select>
         
         <button 
@@ -163,7 +186,10 @@ export default function LiveSupportTestPage() {
         <pre className="text-xs bg-white p-2 rounded overflow-auto">
           {JSON.stringify({
             userLoaded: !!user,
+            userRoles: user?.roles || [],
+            isSupport: user?.roles?.some(role => ['Support', 'Admin'].includes(role)) || false,
             supportUsersCount: supportUsers.length,
+            usersCount: users.length,
             messagesCount: messages.length,
             selectedSupportId,
             isConnected,
