@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { Navbar, Footer } from "@/components";
+import { ChatProvider } from "@/features/chat/chatContext";
+import ChatWidget from "@/components/Chat/ChatWidget";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -66,9 +68,12 @@ export default function RootLayout({
   return (
     <html lang="tr" className="dark">
       <body className={`${montserrat.variable} antialiased`}>
-        <Navbar />
-        {children}
-        <Footer />
+        <ChatProvider>
+          <Navbar />
+          {children}
+          <Footer />
+          <ChatWidget />
+        </ChatProvider>
       </body>
     </html>
   );
