@@ -14,6 +14,7 @@ export const AUTH_ENDPOINTS = {
 export const USER_ENDPOINTS = {
   updateUser: "/api/User/UpdateUser",
   getUserById: "/api/User/GetUserById", // Updated endpoint name
+  getCurrentUser: "/api/User/GetCurrentUser", // New endpoint
   changePassword: "/api/User/ChangePassword",
 } as const;
 
@@ -44,6 +45,8 @@ export const ORDER_ENDPOINTS = {
 export const ADDRESS_ENDPOINTS = {
   addAddress: "/api/Adress/AddAdress",
   getUserAddress: "/api/Adress/GetUserAdress",
+  updateAddress: "/api/Adress/UpdateAdress",
+  deleteAddress: "/api/Adress/DeleteAdress",
 } as const;
 
 export const BASKET_ENDPOINTS = {

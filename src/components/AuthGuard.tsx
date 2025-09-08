@@ -3,29 +3,49 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth";
+import { getCurrentUserAPI } from "@/features/user";
 
 export default function AuthGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const accessToken = useAuthStore((s) => s.accessToken);
+  const updateUser = useAuthStore((s) => s.updateUser);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       if (typeof window === "undefined") return;
 
-      if (user || accessToken) {
-        setIsLoading(false);
+      if (!accessToken) {
+        // Token yok, login'e yönlendir
+        router.replace("/login");
         return;
       }
 
-      // Authentication yok, login'e yönlendir
-      router.replace("/login");
+      // Token var ama user bilgisi yoksa API'den al
+      if (accessToken && !user) {
+        try {
+          const currentUser = await getCurrentUserAPI();
+          updateUser({
+            id: currentUser.userId,
+            email: currentUser.email,
+            firstName: currentUser.firstName,
+            lastName: currentUser.lastName,
+            roles: currentUser.roles
+          });
+        } catch (error) {
+          console.error("Failed to get current user:", error);
+          // API hatası durumunda login'e yönlendir
+          router.replace("/login");
+          return;
+        }
+      }
+
+      setIsLoading(false);
     };
 
-    // accessToken veya user değiştiğinde kontrolü yeniden yap
     checkAuth();
-  }, [router, user, accessToken]);
+  }, [router, user, accessToken, updateUser]);
 
   if (isLoading) {
     return (

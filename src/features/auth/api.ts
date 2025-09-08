@@ -5,7 +5,8 @@ import {
   LoginRequest, 
   AuthResponse, 
   ForgotPasswordRequest, 
-  ResetPasswordRequest 
+  ResetPasswordRequest,
+  RefreshTokenResponse 
 } from "@/Types";
 import { AxiosError } from 'axios';
 
@@ -119,15 +120,53 @@ export const resetPasswordAPI = async (data: ResetPasswordRequest): Promise<Auth
   }
 };
 
+export const refreshTokenAPI = async (refreshToken: string): Promise<RefreshTokenResponse> => {
+  try {
+    const response = await api.post<RefreshTokenResponse>(AUTH_ENDPOINTS.refresh, {
+      refreshToken
+    });
+
+    return response.data;
+  } catch (error: unknown) {
+    console.error('Refresh Token API Error:', error);
+    
+    if (error instanceof AxiosError) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+    }
+    
+    if (error instanceof Error) {
+      throw new Error(error.message || 'Network error occurred');
+    }
+    
+    throw new Error('Network error occurred');
+  }
+};
+
 // src/features/auth/api.ts
 export async function getSession() {
   try {
+    // Önce mevcut endpoint'i dene
     const res = await api.get(AUTH_ENDPOINTS.roles);
     const payload = res.data;
     if (payload?.user) return payload.user;
     if (payload?.email || payload?.id) return payload; // bazı backendlere uyum
     return null;
   } catch {
-    return null;
+    // Eğer roles endpoint'i çalışmazsa getCurrentUser'ı dene
+    try {
+      const { getCurrentUserAPI } = await import('@/features/user/api');
+      const currentUser = await getCurrentUserAPI();
+      return {
+        id: currentUser.userId,
+        email: currentUser.email,
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        roles: currentUser.roles
+      };
+    } catch {
+      return null;
+    }
   }
 }

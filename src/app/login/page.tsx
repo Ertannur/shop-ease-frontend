@@ -33,16 +33,16 @@ export default function LoginPage() {
         // Token'ı localStorage'a kaydet
         localStorage.setItem('token', result.token.accessToken);
         
-        // User bilgilerini auth store'a kaydet
+        // User bilgilerini auth store'a kaydet (backend response'tan al)
         const userInfo = {
-          id: result.userId || '',
-          email: form.email,
-          /* firstName: result.user?.firstName,
+          id: result.user?.userId || result.userId || '',
+          email: result.user?.email || form.email,
+          firstName: result.user?.firstName,
           lastName: result.user?.lastName,
-          roles: result.user?.roles || [] */
+          roles: result.user?.roles || []
         };
         
-        setSession(userInfo, result.token.accessToken);
+        setSession(userInfo, result.token.accessToken, result.token.refreshToken);
         
         // Kullanıcının backend'teki verilerini yükle
         try {
@@ -69,38 +69,79 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="container max-w-md py-12">
-      <h1 className="text-2xl font-bold mb-6">Giriş Yap</h1>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="email"
-          placeholder="E-posta"
-          className="w-full border p-3 rounded"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Şifre"
-          className="w-full border p-3 rounded"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          required
-        />
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-black text-white py-3 rounded hover:bg-gray-800"
-        >
-          {loading ? "Gönderiliyor..." : "Giriş Yap"}
-        </button>
-      </form>
-      <p className="mt-4 text-sm">
-        Hesabın yok mu? <Link href="/register" className="underline">Kayıt ol</Link>
-      </p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Giriş Yap</h1>
+          <p className="text-sm text-gray-600">Hesabınıza giriş yapın</p>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                E-posta Adresi
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder="ornek@email.com"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Şifre
+              </label>
+              <input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                required
+              />
+            </div>
+            
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            )}
+            
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-black text-white py-3 px-4 rounded-lg hover:bg-gray-800 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
+            >
+              {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
+            </button>
+          </form>
+          
+          <div className="mt-6 text-center">
+            <Link 
+              href="/forgot-password" 
+              className="text-sm text-blue-600 hover:text-blue-500 hover:underline transition-colors duration-200"
+            >
+              Şifremi Unuttum
+            </Link>
+          </div>
+        </div>
+        
+        <div className="text-center">
+          <p className="text-sm text-gray-600">
+            Hesabın yok mu?{" "}
+            <Link href="/register" className="text-blue-600 hover:text-blue-500 font-medium hover:underline transition-colors duration-200">
+              Kayıt ol
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

@@ -159,7 +159,7 @@ class JWTTokenManager {
 
       // Call refresh endpoint
       const response = await api.post<RefreshTokenResponse>(
-        AUTH_ENDPOINTS.refreshTokenLogin,
+        AUTH_ENDPOINTS.refresh,
         { refreshToken }
       );
 

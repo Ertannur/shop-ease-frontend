@@ -54,7 +54,7 @@ export default function RegisterPage() {
     email: "",
     password: "",
     dateOfBirth: "",
-    gender: 0 as 0 | 1 | 2, // 0: Erkek, 1: Kadın, 2: Diğer (backend enum'una göre ayarla)
+    gender: 0 as 0 | 1, // 0: Erkek, 1: Kadın
   });
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -113,14 +113,14 @@ export default function RegisterPage() {
           localStorage.setItem('token', result.token.accessToken);
           
           const userInfo = {
-            id: result.userId || '',
-            email: form.email,
+            id: result.user?.userId || result.userId || '',
+            email: result.user?.email || form.email,
             firstName: result.user?.firstName || form.firstName,
             lastName: result.user?.lastName || form.lastName,
             roles: result.user?.roles || []
           };
           
-          setSession(userInfo, result.token.accessToken);
+          setSession(userInfo, result.token.accessToken, result.token.refreshToken);
           
           // Kullanıcının backend'teki verilerini yükle (yeni kullanıcı için boş olacak)
           try {
@@ -150,99 +150,169 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="container max-w-md py-12">
-      <h1 className="text-2xl font-bold mb-6">Kayıt Ol</h1>
-      <form onSubmit={onSubmit} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Ad"
-          className="w-full border p-3 rounded"
-          value={form.firstName}
-          onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Soyad"
-          className="w-full border p-3 rounded"
-          value={form.lastName}
-          onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-          required
-        />
-        <input
-          type="email"
-          placeholder="E-posta"
-          className="w-full border p-3 rounded"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Şifre"
-          className="w-full border p-3 rounded"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          required
-          minLength={7}
-        />
-        
-        {/* Şifre Gereksinimleri */}
-        <div className="bg-blue-50 p-3 rounded text-sm">
-          <p className="font-semibold mb-2">Şifre gereksinimleri:</p>
-          <ul className="text-xs space-y-1">
-            <li className={form.password.length >= 7 ? "text-green-600" : "text-gray-600"}>
-              ✓ En az 7 karakter
-            </li>
-            <li className={/[A-Z]/.test(form.password) ? "text-green-600" : "text-gray-600"}>
-              ✓ En az bir büyük harf (A-Z)
-            </li>
-            <li className={/[!@#$%^&*(),.?":{}|<>]/.test(form.password) ? "text-green-600" : "text-gray-600"}>
-              ✓ En az bir özel karakter (!@#$%^&* gibi)
-            </li>
-          </ul>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Kayıt Ol</h1>
+          <p className="text-sm text-gray-600">Yeni hesap oluşturun</p>
         </div>
-        <input
-          type="tel"
-          placeholder="Telefon (örn: 05551234567 veya +905551234567)"
-          className="w-full border p-3 rounded"
-          value={form.phoneNumber}
-          onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
-          required
-        />
-        <input
-          type="date"
-          placeholder="Doğum Tarihi"
-          className="w-full border p-3 rounded"
-          value={form.dateOfBirth}
-          onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
-          required
-        />
-        <select
-          className="w-full border p-3 rounded"
-          value={form.gender}
-          onChange={(e) =>
-            setForm({ ...form, gender: Number(e.target.value) as 0 | 1 | 2 })
-          }
-          required
-        >
-          <option value={0}>Erkek</option>
-          <option value={1}>Kadın</option>
-          <option value={2}>Diğer</option>
-        </select>
+        
+        <div className="bg-white rounded-lg shadow-md p-8">
+          <form onSubmit={onSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Ad
+                </label>
+                <input
+                  id="firstName"
+                  type="text"
+                  placeholder="Adınız"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                  value={form.firstName}
+                  onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Soyad
+                </label>
+                <input
+                  id="lastName"
+                  type="text"
+                  placeholder="Soyadınız"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                  value={form.lastName}
+                  onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                E-posta Adresi
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder="ornek@email.com"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Şifre
+              </label>
+              <input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                required
+                minLength={7}
+              />
+              
+              {/* Şifre Gereksinimleri */}
+              <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="font-semibold text-sm text-blue-800 mb-2">Şifre gereksinimleri:</p>
+                <ul className="text-xs space-y-1">
+                  <li className={`flex items-center gap-2 ${form.password.length >= 7 ? "text-green-600" : "text-gray-500"}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${form.password.length >= 7 ? "bg-green-500" : "bg-gray-300"}`}></span>
+                    En az 7 karakter
+                  </li>
+                  <li className={`flex items-center gap-2 ${/[A-Z]/.test(form.password) ? "text-green-600" : "text-gray-500"}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${/[A-Z]/.test(form.password) ? "bg-green-500" : "bg-gray-300"}`}></span>
+                    En az bir büyük harf (A-Z)
+                  </li>
+                  <li className={`flex items-center gap-2 ${/[!@#$%^&*(),.?":{}|<>]/.test(form.password) ? "text-green-600" : "text-gray-500"}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${/[!@#$%^&*(),.?":{}|<>]/.test(form.password) ? "bg-green-500" : "bg-gray-300"}`}></span>
+                    En az bir özel karakter (!@#$%^&* gibi)
+                  </li>
+                </ul>
+              </div>
+            </div>
+            
+            <div>
+              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                Telefon Numarası
+              </label>
+              <input
+                id="phoneNumber"
+                type="tel"
+                placeholder="05XX XXX XX XX"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                value={form.phoneNumber}
+                onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+                required
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
+                  Doğum Tarihi
+                </label>
+                <input
+                  id="dateOfBirth"
+                  type="date"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                  value={form.dateOfBirth}
+                  onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">
+                  Cinsiyet
+                </label>
+                <select
+                  id="gender"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                  value={form.gender}
+                  onChange={(e) =>
+                    setForm({ ...form, gender: Number(e.target.value) as 0 | 1 })
+                  }
+                  required
+                >
+                  <option value={0}>Erkek</option>
+                  <option value={1}>Kadın</option>
+                </select>
+              </div>
+            </div>
 
-        {err && <p className="text-red-600 text-sm">{err}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-black text-white py-3 rounded hover:bg-gray-800"
-        >
-          {loading ? "Gönderiliyor..." : "Kayıt Ol"}
-        </button>
-      </form>
-      <p className="mt-4 text-sm">
-        Zaten hesabın var mı? <Link href="/login" className="underline">Giriş yap</Link>
-      </p>
+            {err && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-red-600 text-sm">{err}</p>
+              </div>
+            )}
+            
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-black text-white py-3 px-4 rounded-lg hover:bg-gray-800 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
+            >
+              {loading ? "Kayıt oluşturuluyor..." : "Kayıt Ol"}
+            </button>
+          </form>
+        </div>
+        
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-600">
+            Zaten hesabın var mı?{" "}
+            <Link href="/login" className="text-blue-600 hover:text-blue-500 font-medium hover:underline transition-colors duration-200">
+              Giriş yap
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

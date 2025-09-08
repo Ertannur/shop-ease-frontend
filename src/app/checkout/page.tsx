@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import { useCartStore, useOrderStore } from "@/stores";
-import { getUserAddressAPI, addAddressAPI } from "@/features/address";
+import { getUserAddressAPI, addAddressAPI, updateAddressAPI, deleteAddressAPI } from "@/features/address";
 import { createOrderAPI } from "@/features/order";
-import { Address, AddAddressRequest, OrderData } from "@/Types";
+import { Address, AddAddressRequest, UpdateAddressRequest, DeleteAddressRequest, OrderData } from "@/Types";
 import { formatTL } from "@/lib";
 
 const CheckoutPage = () => {
@@ -17,10 +17,12 @@ const CheckoutPage = () => {
   const getTotalPrice = useCartStore((state) => state.getTotalPrice);
   const clearCart = useCartStore((state) => state.clearCart);
   const setOrderData = useOrderStore((state) => state.setOrderData);
+  const addToOrderHistory = useOrderStore((state) => state.addToOrderHistory);
   const [isLoading, setIsLoading] = useState(true);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
   const [showAddAddressForm, setShowAddAddressForm] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [loading, setLoading] = useState(false);
   const [paymentInfo, setPaymentInfo] = useState({
     cardNumber: "",
@@ -100,19 +102,43 @@ const CheckoutPage = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const addData: AddAddressRequest = {
-        title: newAddress.title,
-        name: newAddress.name,
-        surname: newAddress.surname,
-        email: newAddress.email,
-        phone: newAddress.phone,
-        address: newAddress.address,
-        city: newAddress.city,
-        district: newAddress.district,
-        postCode: newAddress.postCode,
-      };
+      
+      if (editingAddress) {
+        // Update existing address
+        const updateData: UpdateAddressRequest = {
+          adressId: editingAddress.adressId,
+          title: newAddress.title,
+          name: newAddress.name,
+          surname: newAddress.surname,
+          email: newAddress.email,
+          phone: newAddress.phone,
+          address: newAddress.address,
+          city: newAddress.city,
+          district: newAddress.district,
+          postCode: newAddress.postCode,
+        };
 
-      await addAddressAPI(addData);
+        await updateAddressAPI(updateData);
+        setMessage({ type: "success", text: "Adres başarıyla güncellendi" });
+        setEditingAddress(null);
+      } else {
+        // Add new address
+        const addData: AddAddressRequest = {
+          title: newAddress.title,
+          name: newAddress.name,
+          surname: newAddress.surname,
+          email: newAddress.email,
+          phone: newAddress.phone,
+          address: newAddress.address,
+          city: newAddress.city,
+          district: newAddress.district,
+          postCode: newAddress.postCode,
+        };
+
+        await addAddressAPI(addData);
+        setMessage({ type: "success", text: "Adres başarıyla eklendi" });
+      }
+
       setNewAddress({
         title: "",
         name: "",
@@ -125,14 +151,67 @@ const CheckoutPage = () => {
         postCode: "",
       });
       setShowAddAddressForm(false);
-      setMessage({ type: "success", text: "Adres başarıyla eklendi" });
       await loadAddresses(); // Refresh addresses
     } catch (error) {
-      console.error("Add address failed:", error);
-      setMessage({ type: "error", text: "Adres eklenirken hata oluştu" });
+      console.error("Address operation failed:", error);
+      setMessage({ 
+        type: "error", 
+        text: editingAddress ? "Adres güncellenirken hata oluştu" : "Adres eklenirken hata oluştu" 
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditAddress = (address: Address) => {
+    setEditingAddress(address);
+    setNewAddress({
+      title: address.title,
+      name: address.name,
+      surname: address.surname,
+      email: address.email,
+      phone: address.phone,
+      address: address.address,
+      city: address.city,
+      district: address.district,
+      postCode: address.postCode,
+    });
+    setShowAddAddressForm(true);
+  };
+
+  const handleDeleteAddress = async (adressId: string) => {
+    if (!window.confirm('Bu adresi silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const deleteData: DeleteAddressRequest = { adressId };
+      await deleteAddressAPI(deleteData);
+      setMessage({ type: "success", text: "Adres başarıyla silindi" });
+      await loadAddresses(); // Refresh addresses
+    } catch (error) {
+      console.error("Delete address failed:", error);
+      setMessage({ type: "error", text: "Adres silinirken hata oluştu" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingAddress(null);
+    setNewAddress({
+      title: "",
+      name: "",
+      surname: "",
+      email: "",
+      phone: "",
+      address: "",
+      city: "",
+      district: "",
+      postCode: "",
+    });
+    setShowAddAddressForm(false);
   };
 
   const handlePlaceOrder = async () => {
@@ -181,6 +260,7 @@ const CheckoutPage = () => {
       };
 
       setOrderData(orderData);
+      addToOrderHistory(orderData);
       // Order başarılı, sepeti temizle
       clearCart();
 
@@ -275,27 +355,51 @@ const CheckoutPage = () => {
                       }`}
                       onClick={() => setSelectedAddressId(address.adressId)}
                     >
-                      <div className="flex items-start space-x-3">
-                        <input
-                          type="radio"
-                          checked={selectedAddressId === address.adressId}
-                          onChange={() =>
-                            setSelectedAddressId(address.adressId)
-                          }
-                          className="mt-1"
-                        />
-                        <div className="flex-1">
-                          <h3 className="font-medium">{address.title}</h3>
-                          <p className="text-sm text-gray-600">
-                            {address.name} {address.surname}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {address.phone}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {address.address}, {address.district},{" "}
-                            {address.city} {address.postCode}
-                          </p>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start space-x-3 flex-1">
+                          <input
+                            type="radio"
+                            checked={selectedAddressId === address.adressId}
+                            onChange={() =>
+                              setSelectedAddressId(address.adressId)
+                            }
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <h3 className="font-medium">{address.title}</h3>
+                            <p className="text-sm text-gray-600">
+                              {address.name} {address.surname}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {address.phone}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {address.address}, {address.district},{" "}
+                              {address.city} {address.postCode}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 ml-4">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditAddress(address);
+                            }}
+                            className="text-blue-600 hover:text-blue-800 text-sm px-2 py-1 border border-blue-600 rounded hover:bg-blue-50 transition-colors"
+                            title="Düzenle"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteAddress(address.adressId);
+                            }}
+                            className="text-red-600 hover:text-red-800 text-sm px-2 py-1 border border-red-600 rounded hover:bg-red-50 transition-colors"
+                            title="Sil"
+                          >
+                            🗑️
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -309,16 +413,27 @@ const CheckoutPage = () => {
 
               {/* Add New Address Button */}
               <button
-                onClick={() => setShowAddAddressForm(!showAddAddressForm)}
+                onClick={() => {
+                  if (editingAddress) {
+                    cancelEdit();
+                  } else {
+                    setShowAddAddressForm(!showAddAddressForm);
+                  }
+                }}
                 className="mt-4 text-black border border-black px-4 py-2 rounded-lg hover:bg-black hover:text-white transition-colors"
               >
-                {showAddAddressForm ? "İptal Et" : "Yeni Adres Ekle"}
+                {editingAddress 
+                  ? "İptal Et" 
+                  : (showAddAddressForm ? "İptal Et" : "Yeni Adres Ekle")
+                }
               </button>
 
-              {/* Add Address Form */}
-              {showAddAddressForm && (
+              {/* Add/Edit Address Form */}
+              {(showAddAddressForm || editingAddress) && (
                 <div className="mt-6 bg-gray-50 rounded-lg p-6">
-                  <h3 className="font-medium mb-4">Yeni Adres Ekle</h3>
+                  <h3 className="font-medium mb-4">
+                    {editingAddress ? "Adres Düzenle" : "Yeni Adres Ekle"}
+                  </h3>
                   <form onSubmit={handleAddAddress} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <input
@@ -432,13 +547,27 @@ const CheckoutPage = () => {
                       className="w-full border rounded-lg px-3 py-2 h-20"
                       required
                     />
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-50"
-                    >
-                      {loading ? "Ekleniyor..." : "Adresi Ekle"}
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                      >
+                        {loading 
+                          ? (editingAddress ? "Güncelleniyor..." : "Ekleniyor...") 
+                          : (editingAddress ? "Adresi Güncelle" : "Adresi Ekle")
+                        }
+                      </button>
+                      {editingAddress && (
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600"
+                        >
+                          İptal
+                        </button>
+                      )}
+                    </div>
                   </form>
                 </div>
               )}
