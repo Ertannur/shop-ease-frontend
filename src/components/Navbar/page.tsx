@@ -272,7 +272,7 @@ const Navbar = () => {
             >
               {isDark ? "☀️" : "🌙"}
             </button>
-            {/* profil iconu */}
+            
             {showAuthState ? (
               <>
                 {/* Hoş geldin etiketi */}
@@ -337,13 +337,13 @@ const Navbar = () => {
             ) : isHydrated ? (
               <div
                 className={`flex items-center gap-3 ${
-                  isAtTop ? "text-gray-300" : ""
+                  isAtTop ? "text-gray-300" : "dark:text-gray-900"
                 }`}
               >
                 <Link href="/login" className="text-sm hover:underline">
                   Giriş Yap
                 </Link>
-                <span className={isAtTop ? "text-gray-500" : "text-gray-300"}>
+                <span className={isAtTop ? "text-gray-500" : "text-gray-300 dark:text-gray-900"}>
                   /
                 </span>
                 <Link href="/register" className="text-sm hover:underline">

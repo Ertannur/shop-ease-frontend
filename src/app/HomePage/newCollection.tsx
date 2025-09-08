@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const NewCollection = () => {
   return (
-    <div className="container py-12  dark:bg-slate-900">
+    <div className="container py-12 ">
       {/* Başlık - Marka kimliği ile uyumlu */}
       <div className="text-center mb-12">
         <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 dark:from-purple-400 dark:via-blue-400 dark:to-indigo-400 bg-clip-text text-transparent mb-4">
